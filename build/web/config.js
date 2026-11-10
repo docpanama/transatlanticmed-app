@@ -6,5 +6,6 @@
 // the key lives only on the proxy, never in the browser.
 // ============================================================
 window.APP_CONFIG = {
-  proxyUrl: "http://localhost:3000"
+  proxyUrl:  "https://transatlanticmed-proxy.onrender.com"
+"
 };
