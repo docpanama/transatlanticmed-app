@@ -24,6 +24,32 @@ const {
 } = require('./lib/aar');
 
 const app = express();
+// ---------------------------------------------------------------- CORS
+// The front end lives on GitHub Pages (and later app.transatlanticmed.com)
+// — a different origin from this proxy. Browsers block a page from
+// reading cross-origin responses unless the server sends these headers,
+// so without them every call fails with "Failed to fetch" even though
+// the proxy itself is healthy. Only the two known front-end origins are
+// allowed — never "*" (the proxy fronts a paid API key; a wildcard would
+// let any website spend it).
+const ALLOWED_ORIGINS = new Set([
+  'https://docpanama.github.io',
+  'https://app.transatlanticmed.com',
+]);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
+
 app.use(express.json({ limit: '1mb' }));
 
 // ---------------------------------------------------------------- startup
