@@ -7,5 +7,4 @@
 // ============================================================
 window.APP_CONFIG = {
   proxyUrl:  "https://transatlanticmed-proxy.onrender.com"
-"
 };
