@@ -26,16 +26,17 @@ const {
 const app = express();
 
 // ---------------------------------------------------------------- CORS
-// The front end lives on GitHub Pages (and later app.transatlanticmed.com)
-// — a different origin from this proxy. Browsers block a page from
-// reading cross-origin responses unless the server sends these headers,
-// so without them every call fails with "Failed to fetch" even though
-// the proxy itself is healthy. Only the two known front-end origins are
+// The front end lives on GitHub Pages, served from transatlanticmed.com
+// (apex, plus www) — a different origin from this proxy. Browsers block
+// a page from reading cross-origin responses unless the server sends these
+// headers, so without them every call fails with "Failed to fetch" even
+// though the proxy itself is healthy. Only the known front-end origins are
 // allowed — never "*" (the proxy fronts a paid API key; a wildcard would
 // let any website spend it).
 const ALLOWED_ORIGINS = new Set([
   'https://docpanama.github.io',
-  'https://app.transatlanticmed.com',
+  'https://transatlanticmed.com',
+  'https://www.transatlanticmed.com',
 ]);
 app.use((req, res, next) => {
   const origin = req.headers.origin;
