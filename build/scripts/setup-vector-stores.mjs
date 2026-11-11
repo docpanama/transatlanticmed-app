@@ -95,7 +95,7 @@ const ROLE1_FILES = [
   "prolongedcare.pdf",
   "Prolonged_Casualty_Care_Guidelines_21_Dec_2021_ID91_.pdf",
   "!HOW TO USE THE PFC-EDGE AUSTERE CARE SIMULATOR.docx",
-  "!WHAT_IS_ROLE1_GPT.docx",
+  "!WHAT_IS_ROLE1.docx",
   "!PFC-EDGE_STUDENT_INSTRUCTIONS.docx",
 ];
 
@@ -114,8 +114,8 @@ const FOXTWO_FILES = [
   // ~73 MB. Inside OpenAI's 512 MB per-file limit; see README.md if its
   // indexing ever fails (fallback: split into chapters and re-run).
   "Critical Care Transport 3rd Edition.pdf",
-  "!HOW TO USE THE FoxTwo.GPT CCT-EDGE TRANSPORT SIMULATOR.docx",
-  "!What Is FoxTwo.GPT.docx",
+  "!HOW TO USE THE FoxTwo CCT-EDGE TRANSPORT SIMULATOR.docx",
+  "!What Is FoxTwo.docx",
   "!CCT-EDGE_STUDENT_INSTRUCTIONS.docx",
 ];
 
