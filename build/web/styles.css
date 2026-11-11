@@ -99,7 +99,7 @@ p.lede { color: var(--muted); margin: 0 0 16px; }
   .tool-grid { grid-template-columns: 1fr 1fr; }
 }
 .tool-card { display: flex; flex-direction: column; }
-.tool-card h3 { font-size: 1.25rem; }
+.tool-card h3 { font-size: 1.6rem; }
 .tool-card .tag {
   display: inline-block;
   font-size: 0.8rem;
