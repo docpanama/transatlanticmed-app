@@ -71,7 +71,7 @@ p.lede { color: var(--muted); margin: 0 0 16px; }
 
 /* ---- Brand hero (Transatlantic Medical logo + tagline) ---- */
 .hero { text-align: center; padding: 4px 0 8px; }
-.hero-logo { max-width: 320px; width: 82%; height: auto; }
+.hero-logo { max-width: 560px; width: 92%; height: auto; }
 .hero-tagline { color: var(--muted); font-size: 0.95rem; margin: 6px 0 8px; }
 .tool-logo { max-height: 84px; width: auto; max-width: 100%; margin: 2px auto 10px; }
 
