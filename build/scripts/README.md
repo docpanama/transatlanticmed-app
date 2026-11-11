@@ -25,7 +25,10 @@ into Render as `ROLE1_VECTOR_STORE_ID` and `FOXTWO_VECTOR_STORE_ID`.
   - `GPT_dev_files/FoxTwo_sources` (FoxTwo's 9 files)
   - Download each folder as-is — do not rename any file. The script matches
     exact filenames from each tool's source table and warns loudly about
-    anything missing.
+    anything missing. (Exception: the three supporting docs were renamed
+    2026-11-11 to drop the .GPT suffix — `!WHAT_IS_ROLE1.docx`,
+    `!HOW TO USE THE FoxTwo CCT-EDGE TRANSPORT SIMULATOR.docx`,
+    `!What Is FoxTwo.docx` — and the script's file lists were updated to match.)
 
 ## Run it
 
