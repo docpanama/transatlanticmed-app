@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Role1 &amp; FoxTwo — Clinical Decision Tools</title>
-<link rel="stylesheet" href="styles.css">
+<!-- Cache-bust: bump ?v= on app.js and styles.css with every push that
+     changes them, so browsers never serve a cached copy of the old file.
+     (GitHub Pages has no cache invalidation; a new URL is the only way
+     to guarantee the fresh file. The version below is date+letter.) -->
+<link rel="stylesheet" href="styles.css?v=20261111a">
 </head>
 <body>
 
@@ -217,6 +221,6 @@
 </footer>
 
 <script src="config.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=20261111a"></script>
 </body>
 </html>
