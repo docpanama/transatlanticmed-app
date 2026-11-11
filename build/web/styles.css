@@ -76,6 +76,11 @@ p.lede { color: var(--muted); margin: 0 0 16px; }
 .hero-disclaimer { font-size: 0.9rem; color: var(--ink); margin: 0 0 8px; }
 .tool-logo { max-height: 84px; width: auto; max-width: 100%; margin: 2px auto 10px; }
 
+/* ---- About page ---- */
+.about-layout { display: flex; gap: 24px; align-items: flex-start; }
+.about-photo { max-width: 260px; width: 100%; height: auto; border-radius: var(--radius); }
+@media (max-width: 640px) { .about-layout { flex-direction: column; } }
+
 /* ---- Status / errors ---- */
 .status {
   border: 1px solid var(--line);
