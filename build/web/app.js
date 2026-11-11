@@ -194,6 +194,27 @@
     showView("picker");
   });
 
+  // Header "Guides" link: the Guides section lives inside the picker view,
+  // so a plain #guides anchor does nothing when another view is showing
+  // (and on a tall screen the jump is invisible anyway). Bring the picker
+  // back if needed, then scroll to it and flash it.
+  var navGuides = $("nav-guides");
+  if (navGuides) {
+    navGuides.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      if ($("view-picker").classList.contains("hidden")) {
+        state.tool = null;
+        showView("picker");
+      }
+      var guides = $("guides");
+      requestAnimationFrame(function () {
+        guides.scrollIntoView({ behavior: "smooth", block: "start" });
+        guides.classList.add("guides-flash");
+        setTimeout(function () { guides.classList.remove("guides-flash"); }, 1600);
+      });
+    });
+  }
+
   // ---- Scenario picker ----
   async function loadScenarios() {
     var list = $("scenario-list");

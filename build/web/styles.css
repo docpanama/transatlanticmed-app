@@ -109,6 +109,8 @@ p.lede { color: var(--muted); margin: 0 0 16px; }
 .tool-card .links a { display: block; margin: 2px 0; }
 
 .guides-list { list-style: none; padding: 0; margin: 0; }
+#guides { scroll-margin-top: 12px; }
+#guides.guides-flash { outline: 2px solid var(--accent-2); outline-offset: 2px; }
 .guides-list li { padding: 6px 0; border-bottom: 1px solid #eef1f4; }
 .guides-list li:last-child { border-bottom: 0; }
 .guides-list .tool-label { font-weight: 600; }
