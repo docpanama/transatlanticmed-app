@@ -137,6 +137,18 @@ button.danger-btn {
 }
 button.small { padding: 6px 12px; font-size: 0.9rem; }
 
+/* Big red "use the tool now" button on each tool card, and the
+   training button beneath it. Both stretch the full card width. */
+.tool-card button { display: block; width: 100%; }
+button.cdt-now {
+  padding: 16px 20px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: var(--danger);
+  color: #fff;
+  margin-bottom: 8px;
+}
+
 label { display: block; font-weight: 600; margin: 14px 0 4px; }
 label .hint { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
 select, input[type="text"], textarea {

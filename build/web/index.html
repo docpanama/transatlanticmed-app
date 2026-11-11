@@ -26,34 +26,40 @@
   <!-- ============ VIEW 1: TOOL PICKER ============ -->
   <section id="view-picker" aria-label="Choose a tool">
     <h2>Choose a tool</h2>
-    <p class="lede">Pick the tool for the care you are providing. Each tool can also run a
-    training simulation — choose a scenario on the next step.</p>
+    <p class="lede">Each tool is two things: a clinical decision tool you can use right now,
+    and a training simulator. Pick the path you need.</p>
 
     <div class="tool-grid">
       <article class="card tool-card role1">
         <span class="tag">Prolonged field care</span>
         <h3>Role1</h3>
-        <p>Point-of-care clinical decision support for frontline clinicians providing
-        prolonged field care. Its simulation engine is PFC_EDGE.</p>
+        <p><strong>Role1</strong> is the clinical decision tool — point-of-care support
+        for frontline clinicians providing prolonged field care.</p>
+        <p><strong>PFC_EDGE</strong> is the simulation engine inside Role1 — it runs
+        training scenarios so you can practise using the tool.</p>
         <div class="links">
           <a href="docs/role1-what-is.html">What is Role1?</a>
           <a href="docs/role1-how-to-use.html">How to use Role1</a>
           <a href="docs/role1-student-instructions.html">Student instructions</a>
         </div>
-        <button type="button" data-tool="role1">Use Role1</button>
+        <button type="button" class="cdt-now" data-cdt="role1">Use Role1 now</button>
+        <button type="button" class="secondary" data-train="role1">Train with scenarios</button>
       </article>
 
       <article class="card tool-card foxtwo">
         <span class="tag">Critical care en route</span>
         <h3>FoxTwo</h3>
-        <p>Clinical decision support and reasoning for critical care transport.
-        Its simulation engine is CCT_EDGE.</p>
+        <p><strong>FoxTwo</strong> is the clinical decision tool — decision support and
+        reasoning for critical care transport.</p>
+        <p><strong>CCT_EDGE</strong> is the simulation engine inside FoxTwo — it runs
+        transport training scenarios so you can practise using the tool.</p>
         <div class="links">
           <a href="docs/foxtwo-what-is.html">What is FoxTwo?</a>
           <a href="docs/foxtwo-how-to-use.html">How to use FoxTwo</a>
           <a href="docs/foxtwo-student-instructions.html">Student instructions</a>
         </div>
-        <button type="button" data-tool="foxtwo">Use FoxTwo</button>
+        <button type="button" class="cdt-now" data-cdt="foxtwo">Use FoxTwo now</button>
+        <button type="button" class="secondary" data-train="foxtwo">Train with scenarios</button>
       </article>
     </div>
 
@@ -83,9 +89,7 @@
 
     <div class="card">
       <h3>Choose a scenario</h3>
-      <p class="lede">Simulations run through PFC_EDGE (Role1) or CCT_EDGE (FoxTwo).
-      Or choose “Clinical decision support — no scenario” to ask a clinical question
-      without a simulation.</p>
+      <p class="lede">Pick a training scenario — Easy, Hard, or Peds.</p>
       <div id="scenario-error" class="status error hidden" role="alert"></div>
       <ul id="scenario-list" class="scenario-list"></ul>
       <p id="scenario-loading">Loading scenarios&hellip;</p>

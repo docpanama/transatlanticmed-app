@@ -155,16 +155,31 @@
     }
   }
 
-  // ---- Tool picker ----
-  document.querySelectorAll("[data-tool]").forEach(function (btn) {
+  // ---- Tool picker: two paths per tool ----
+  // Red button: clinical decision support NOW — straight into chat, no
+  // questions. Train button: scenarios — the start view with the
+  // certification/experience form.
+  document.querySelectorAll("[data-cdt]").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      state.tool = btn.getAttribute("data-tool");
+      state.tool = btn.getAttribute("data-cdt");
       state.selectedScenarioId = null;
       state.sessionId = null;
       state.sessionEnded = false;
       state.aarPending = false;
       state.aarDone = false;
-      $("start-heading").textContent = "Start a " + toolName(state.tool) + " session";
+      startSession("", "");
+    });
+  });
+
+  document.querySelectorAll("[data-train]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      state.tool = btn.getAttribute("data-train");
+      state.selectedScenarioId = null;
+      state.sessionId = null;
+      state.sessionEnded = false;
+      state.aarPending = false;
+      state.aarDone = false;
+      $("start-heading").textContent = "Train with " + toolName(state.tool);
       $("start-lede").textContent = toolName(state.tool) +
         (state.tool === "foxtwo"
           ? " — critical care en route. Its simulation engine is CCT_EDGE."
@@ -195,10 +210,9 @@
     } catch (e) {
       hide(loading);
       showError($("scenario-error"),
-        errorMessage(e) + " You can still start a clinical decision support session " +
-        "without a scenario once the service is back — or try again now.");
-      // Still offer the no-scenario option so the form is usable if the
-      // proxy comes back; the start call itself will surface the real error.
+        errorMessage(e) + " The scenario list could not load — try again now.");
+      // The form stays usable if the proxy comes back; the start call
+      // itself will surface the real error.
       renderScenarios();
     }
   }
@@ -207,14 +221,15 @@
     var list = $("scenario-list");
     list.innerHTML = "";
 
-    // No-scenario option: clinical decision support mode (no sim).
-    // Choosing it starts a session immediately — no certification or
-    // experience questions; the questioner needs support now.
-    list.appendChild(scenarioItem(null, "Clinical decision support — no scenario"));
-
     state.scenarios.forEach(function (sc) {
       list.appendChild(scenarioItem(sc.id, sc.title));
     });
+    // Training mode: a scenario is always selected (default: the first).
+    // Clinical decision support has its own button on the tool picker
+    // and is not offered here.
+    if (state.selectedScenarioId === null && state.scenarios.length > 0) {
+      state.selectedScenarioId = state.scenarios[0].id;
+    }
     updateScenarioSelection();
   }
 
@@ -231,13 +246,8 @@
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "secondary small";
-    btn.textContent = id === null ? "Start now" : "Select";
+    btn.textContent = "Select";
     btn.addEventListener("click", function () {
-      if (id === null) {
-        // Clinical decision support: straight into the tool, no form.
-        startSession("", "");
-        return;
-      }
       state.selectedScenarioId = id;
       updateScenarioSelection();
     });
@@ -246,23 +256,14 @@
   }
 
   function updateScenarioSelection() {
-    var isCdt = state.selectedScenarioId === null;
     document.querySelectorAll("#scenario-list li").forEach(function (li) {
-      var isSelected = li.dataset.scenarioId === (isCdt ? "" : String(state.selectedScenarioId));
+      var isSelected = li.dataset.scenarioId === String(state.selectedScenarioId);
       li.classList.toggle("selected", isSelected);
       var btn = li.querySelector("button");
-      if (!btn) return;
-      // The no-scenario card always offers "Start now"; scenario cards
-      // show Selected / Select.
-      if (li.dataset.scenarioId === "") btn.textContent = "Start now";
-      else btn.textContent = isSelected ? "Selected" : "Select";
+      if (btn) btn.textContent = isSelected ? "Selected" : "Select";
     });
-    // "About you" (certification + experience) is collected for scenarios
-    // only — it is hidden for clinical decision support, and the Start
-    // button becomes a direct start.
-    var aboutYou = $("about-you");
-    if (aboutYou) aboutYou.classList.toggle("hidden", isCdt);
-    $("start-btn").textContent = isCdt ? "Start now" : "Start session";
+    // The start view is training only — "About you" is always collected.
+    $("start-btn").textContent = "Start session";
   }
 
   // ---- Start form ----
@@ -298,7 +299,14 @@
       state.aarDone = false;
       openChat(data);
     } catch (e) {
-      showError($("start-error"), errorMessage(e, "starting the session"));
+      var msg = errorMessage(e, "starting the session");
+      showError($("start-error"), msg);
+      // The red "use now" button starts from the picker, where the
+      // start form (and its error line) is hidden — surface the failure
+      // on the status banner as well so it is visible.
+      if ($("view-start").classList.contains("hidden")) {
+        setStatus(msg, "error");
+      }
     } finally {
       btn.disabled = false;
       updateScenarioSelection();
@@ -309,9 +317,10 @@
     ev.preventDefault();
     clearError($("start-error"));
 
-    // Clinical decision support: no questions, straight in.
-    if (state.selectedScenarioId === null) {
-      startSession("", "");
+    // Training mode: a scenario must be chosen (the proxy would
+    // otherwise read a null scenario as clinical decision support).
+    if (!state.selectedScenarioId) {
+      showError($("start-error"), "Please choose a scenario.");
       return;
     }
 
@@ -495,11 +504,12 @@
     checkHealth();
   }
 
-  // ---- Deep link: ?tool=role1 or ?tool=foxtwo pre-selects the tool. ----
+  // ---- Deep link: ?tool=role1 or ?tool=foxtwo opens that tool's
+  // training screen (scenario picker). ----
   try {
     var deepTool = new URLSearchParams(window.location.search).get("tool");
     if (deepTool === "role1" || deepTool === "foxtwo") {
-      var deepBtn = document.querySelector('[data-tool="' + deepTool + '"]');
+      var deepBtn = document.querySelector('[data-train="' + deepTool + '"]');
       if (deepBtn) deepBtn.click();
     }
   } catch (e) { /* ignore malformed URLs */ }
