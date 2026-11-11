@@ -1,0 +1,299 @@
+/* Role1 / FoxTwo — plain, professional clinical-tool look.
+   Readable on a phone in the field. No gimmicks. */
+
+:root {
+  --ink: #1a2332;
+  --muted: #5b6b7d;
+  --line: #d7dee6;
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --accent: #14532d; /* deep clinical green */
+  --accent-2: #1d4ed8; /* FoxTwo blue accent */
+  --user-bg: #e3ecf7;
+  --model-bg: #eef2e9;
+  --warn-bg: #fff7e0;
+  --warn-line: #d9a441;
+  --danger: #991b1b;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+a { color: var(--accent-2); }
+a:visited { color: var(--accent-2); }
+
+header.site-header {
+  background: var(--ink);
+  color: #fff;
+  padding: 14px 16px;
+}
+header.site-header .wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+header.site-header h1 { font-size: 1.25rem; margin: 0; }
+header.site-header p { margin: 0; font-size: 0.9rem; color: #cbd5e1; }
+header.site-header nav { margin-left: auto; font-size: 0.9rem; }
+header.site-header nav a { color: #dbeafe; margin-left: 14px; }
+
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+}
+
+h2 { font-size: 1.3rem; margin: 0 0 8px; }
+h3 { font-size: 1.05rem; margin: 0 0 6px; }
+p.lede { color: var(--muted); margin: 0 0 16px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.hidden { display: none !important; }
+
+/* ---- Status / errors ---- */
+.status {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--muted);
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+.status.ok { border-left-color: var(--accent); }
+.status.error { border-left-color: var(--danger); background: #fdf2f2; }
+.status.warn { border-left-color: var(--warn-line); background: var(--warn-bg); }
+
+/* ---- Tool picker ---- */
+.tool-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 640px) {
+  .tool-grid { grid-template-columns: 1fr 1fr; }
+}
+.tool-card { display: flex; flex-direction: column; }
+.tool-card h3 { font-size: 1.25rem; }
+.tool-card .tag {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.tool-card.foxtwo .tag { color: var(--accent-2); }
+.tool-card p { flex: 1; margin: 0 0 12px; }
+.tool-card .links { font-size: 0.9rem; margin-bottom: 12px; }
+.tool-card .links a { display: block; margin: 2px 0; }
+
+.guides-list { list-style: none; padding: 0; margin: 0; }
+.guides-list li { padding: 6px 0; border-bottom: 1px solid #eef1f4; }
+.guides-list li:last-child { border-bottom: 0; }
+.guides-list .tool-label { font-weight: 600; }
+
+/* ---- Buttons / forms ---- */
+button, .btn {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 10px 18px;
+  background: var(--accent);
+  color: #fff;
+}
+button:hover, .btn:hover { filter: brightness(1.08); }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+button.secondary {
+  background: #fff;
+  color: var(--ink);
+  border-color: var(--line);
+}
+button.danger-btn {
+  background: #fff;
+  color: var(--danger);
+  border-color: #e5b4b4;
+}
+button.small { padding: 6px 12px; font-size: 0.9rem; }
+
+/* Big red "use the tool now" button on each tool card, and the
+   training button beneath it. Both stretch the full card width. */
+.tool-card button { display: block; width: 100%; }
+button.cdt-now {
+  padding: 16px 20px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: var(--danger);
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+label { display: block; font-weight: 600; margin: 14px 0 4px; }
+label .hint { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
+select, input[type="text"], textarea {
+  width: 100%;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+select:focus, input:focus, textarea:focus {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 1px;
+}
+
+.form-actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---- Scenario list ---- */
+.scenario-list { list-style: none; padding: 0; margin: 0; }
+.scenario-list li {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+.scenario-list li.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(20, 83, 45, 0.2); }
+.scenario-list .sc-title { font-weight: 700; }
+.scenario-list .sc-level {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #eef1f4;
+  border-radius: 999px;
+  padding: 1px 9px;
+  margin-left: 8px;
+  color: var(--muted);
+}
+.scenario-list p { margin: 6px 0 10px; color: var(--muted); }
+
+/* ---- Chat ---- */
+.chat-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+}
+.chat-header h2 { margin: 0; }
+.chat-header .session-meta { color: var(--muted); font-size: 0.9rem; }
+.chat-header .header-links { margin-left: auto; font-size: 0.9rem; }
+.chat-header .header-links a { margin-left: 12px; }
+
+#messages {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.message {
+  max-width: 92%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  white-space: pre-wrap; /* preserve line breaks, no markdown rendering */
+  overflow-wrap: break-word;
+}
+.message.user {
+  align-self: flex-end;
+  background: var(--user-bg);
+}
+.message.model {
+  align-self: flex-start;
+  background: var(--model-bg);
+}
+.message.system {
+  align-self: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 100%;
+}
+.message .who {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.typing {
+  align-self: flex-start;
+  background: var(--model-bg);
+  color: var(--muted);
+  font-style: italic;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+}
+
+.chat-input-row { display: flex; gap: 8px; }
+.chat-input-row textarea {
+  flex: 1;
+  min-height: 52px;
+  resize: vertical;
+}
+.chat-input-row button { align-self: flex-end; }
+
+.chat-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* ---- AAR panel ---- */
+.aar-panel {
+  border: 1px solid var(--warn-line);
+  background: var(--warn-bg);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 12px 0;
+}
+.aar-panel h3 { margin-top: 0; }
+.aar-panel .approval-message {
+  white-space: pre-wrap;
+  margin: 0 0 12px;
+}
+.aar-complete {
+  border: 1px solid var(--accent);
+  background: #f0fdf4;
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 12px 0;
+}
+.aar-complete p { margin: 6px 0; }
+
+footer.site-footer {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}

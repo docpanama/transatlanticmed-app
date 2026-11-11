@@ -1,0 +1,78 @@
+Vignette 1, Basic
+“The Delayed Evacuation”
+
+Scenario Background
+You are the senior medical provider on site.
+Location:
+Offshore drilling platform
+
+~140 miles from shore
+
+Evacuation chain:
+Nearest higher-level hospital: ~6 hours under normal conditions
+
+Severe weather system
+
+No air evacuation for at least 24 hours
+
+Sea transfer unsafe
+
+Communications:
+Spotty WiFi capable of video / email / VoIP intermittently
+
+Satellite phone
+
+Radio capability
+
+Teleconsult with supervising physician possible
+
+Resources:
+Limited IV fluids
+
+Basic antibiotics
+
+Portable ultrasound
+
+Limited point-of-care labs (lactate, glucose, i-STAT panel)
+
+Oxygen
+
+No blood products
+
+No CT imaging
+
+Initial Presentation (Hour 0)
+A 42-year-old male presents with:
+2-day history of worsening leg pain
+
+Sustained a laceration to left calf 4 days ago
+
+Self-treated initially
+
+Now febrile and “feels weak”
+
+Vitals:
+HR: 112
+
+BP: 98/62
+
+RR: 24
+
+SpO₂: 95% RA
+
+Temp: 39.1°C
+
+GCS: 15
+
+Exam:
+Left calf erythematous, tense, painful
+
+Mild purulent drainage
+
+No crepitus
+
+Distal pulses intact
+
+No chest pain
+
+No dyspnea

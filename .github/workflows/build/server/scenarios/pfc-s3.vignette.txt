@@ -1,0 +1,81 @@
+Vignette 3, PEDIATRIC
+“The Quiet Child”
+
+Scenario Background
+You are operating in a temporary field clinic following regional flooding.
+Water contamination has caused a surge in diarrheal illness.
+Evacuation routes are partially washed out. Nearest pediatric-capable hospital is 8–10 hours away by ground transport. Air evacuation unavailable due to weather.
+It is 1900 hours. Staffing is minimal overnight.
+You are the senior medical provider on site.
+Location:
+Basic local clinic in Zambia
+Humanitarian response environment
+Resource-limited infrastructure
+Evacuation chain:
+Next highest level of care: ~12 hours by vehicle
+Nearest airstrip: ~3.5 hours by ground
+Scheduled supply/mail flight (CASA C-212): 48 hours from scenario start
+No immediate air evacuation available
+Communications:
+Spotty WiFi (video / email / VoIP intermittently functional)
+Satellite phone
+Radio capability
+Teleconsult possible but bandwidth inconsistent
+Resources:
+Basic labs only
+No advanced imaging
+Limited resupply
+Limited blood products or none depending on scenario payload
+
+Patient
+4-year-old male
+ Brought in by mother
+ 3 days of diarrhea
+ 1 day of vomiting
+ Decreased oral intake
+ Now lethargic
+
+Initial Assessment
+Weight: 14 kg (estimate if needed)
+Vitals:
+HR: 148
+
+BP: 82/50
+
+RR: 32
+
+SpO₂: 99% RA
+
+Temp: 38.5°C
+
+Cap refill: 4–5 seconds
+
+Mental status: Withdraws to voice, not interacting
+
+Skin: Dry mucous membranes
+
+Sunken eyes
+
+No rash
+
+Abdomen soft
+
+Urine: Mother reports no urination today.
+Resources available:
+IV fluids (limited)
+
+Oral rehydration solution
+
+Broad-spectrum antibiotics (limited)
+
+Glucometer
+
+No pediatric blood pressure cuffs except small adult
+
+No lab capability
+
+Oxygen
+
+Basic monitor
+
+Evacuation possible in 8–10 hours if stabilized.
