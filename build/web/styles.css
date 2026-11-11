@@ -81,6 +81,14 @@ p.lede { color: var(--muted); margin: 0 0 16px; }
 .about-photo { max-width: 260px; width: 100%; height: auto; border-radius: var(--radius); }
 @media (max-width: 640px) { .about-layout { flex-direction: column; } }
 
+/* ---- Read-first box on the training screen ---- */
+.read-first { border: 2px solid var(--danger); background: #fdf2f2; }
+.read-first h3 { color: var(--danger); font-size: 1.15rem; margin: 0 0 6px; }
+.read-first p { margin: 0 0 6px; }
+.read-first ul { margin: 8px 0 0; padding-left: 1.2em; }
+.read-first li { margin: 4px 0; }
+.read-first a { font-weight: 600; }
+
 /* ---- Status / errors ---- */
 .status {
   border: 1px solid var(--line);

@@ -221,6 +221,15 @@
         (state.tool === "foxtwo"
           ? " — critical care en route. Its simulation engine is CCT_EDGE."
           : " — prolonged field care. Its simulation engine is PFC_EDGE.");
+      // "STOP, READ THIS FIRST" box: the two guides, renamed and
+      // per-tool. They open in a new tab so the student keeps their place.
+      $("start-howto-link").href = state.tool === "foxtwo"
+        ? "docs/foxtwo-how-to-use.html" : "docs/role1-how-to-use.html";
+      $("start-howto-link").textContent = state.tool === "foxtwo"
+        ? "How to Use CCT_EDGE Transport Simulator"
+        : "How to Use PFC-EDGE Prolonged Care Simulator";
+      $("start-student-link").href = state.tool === "foxtwo"
+        ? "docs/foxtwo-student-instructions.html" : "docs/role1-student-instructions.html";
       goToView("start");
       loadScenarios();
     });
