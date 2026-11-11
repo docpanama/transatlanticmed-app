@@ -126,6 +126,43 @@
     window.scrollTo(0, 0);
   }
 
+  // ---- Browser history: Back always goes to the previous view ----
+  // Views change in place (no page loads), so without this the browser
+  // never records a view change and Back skips the app entirely, leaving
+  // the site. Every view change pushes a history entry; Back and forward
+  // restore the view from the popped state without pushing again.
+  // The tool is stored in the state too, so returning to a chat or
+  // training screen keeps the right tool (message labels depend on it).
+  var currentView = "picker";
+
+  function goToView(name, opts) {
+    opts = opts || {};
+    if (name === currentView && !opts.force) return;
+    showView(name);
+    currentView = name;
+    if (!opts.fromHistory) {
+      try { history.pushState({ view: name, tool: state.tool || null }, ""); } catch (e) { /* ignore */ }
+    }
+  }
+
+  window.addEventListener("popstate", function (ev) {
+    var st = ev.state || {};
+    var view = st.view || "picker";
+    // After a page reload the app state is fresh (no session, no loaded
+    // scenarios), so a popped chat/training view would be empty — fall
+    // back to the hub instead of showing a dead screen.
+    if (view === "chat" && !state.sessionId) view = "picker";
+    if (view === "start" && (!st.tool || !state.scenarios.length)) view = "picker";
+    if (st.tool) state.tool = st.tool;
+    goToView(view, { fromHistory: true, force: true });
+  });
+
+  // The entry the page loaded on is the hub, so Back from the hub leaves
+  // the site as normal. A deep link replaces this entry below and then
+  // pushes its training screen on top (see the deep-link block at the
+  // end), so Back from a deep-linked training screen lands on the hub.
+  try { history.replaceState({ view: "picker", tool: null }, ""); } catch (e) { /* ignore */ }
+
   function toolName(tool) {
     return tool === "foxtwo" ? "FoxTwo" : "Role1";
   }
@@ -184,14 +221,14 @@
         (state.tool === "foxtwo"
           ? " — critical care en route. Its simulation engine is CCT_EDGE."
           : " — prolonged field care. Its simulation engine is PFC_EDGE.");
-      showView("start");
+      goToView("start");
       loadScenarios();
     });
   });
 
   $("back-to-picker").addEventListener("click", function () {
     state.tool = null;
-    showView("picker");
+    goToView("picker");
   });
 
   // Header "Guides" link: the Guides section lives inside the picker view,
@@ -204,7 +241,7 @@
       ev.preventDefault();
       if ($("view-picker").classList.contains("hidden")) {
         state.tool = null;
-        showView("picker");
+        goToView("picker");
       }
       var guides = $("guides");
       requestAnimationFrame(function () {
@@ -379,7 +416,7 @@
     hide($("aar-complete"));
     clearError($("chat-error"));
     setChatEnabled(true);
-    showView("chat");
+    goToView("chat");
 
     // Vignette + greeting come from the proxy. The vignette is plain text
     // the proxy is allowed to send; scenario JSON itself never reaches us.
@@ -513,7 +550,7 @@
     hide($("aar-panel"));
     hide($("aar-complete"));
     clearError($("chat-error"));
-    showView("picker");
+    goToView("picker");
     checkHealth();
   });
 
