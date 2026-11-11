@@ -66,6 +66,17 @@ function levelFrom(vignette, scenarioObj) {
   return 'Basic';
 }
 
+// Learner-facing scenario names are the difficulty only — Easy / Hard /
+// Peds. The authored titles ("The Delayed Evacuation", "The Quiet
+// Child", ...) and the theme are never shown to the learner: the theme
+// would give away the diagnosis/complications before the learner has
+// examined the patient, and the titles do the same work in miniature.
+// The original titles stay inside the raw JSON (server-side only).
+const DISPLAY_TITLES = { Basic: 'Easy', Advanced: 'Hard', Pediatric: 'Peds' };
+function displayTitle(level) {
+  return DISPLAY_TITLES[level] || level;
+}
+
 function normalize(raw, id, tool) {
   const directive = (raw && typeof raw.directive === 'object' && raw.directive) || {};
   const scenario = (raw && typeof raw.scenario === 'object' && raw.scenario) || {};
@@ -79,14 +90,14 @@ function normalize(raw, id, tool) {
   }
 
   const vignette = readVignette(id);
+  const level = levelFrom(vignette, scenario);
   return {
     id, // file id, e.g. 'pfc-s1' — what the API uses as scenario_id
     tool,
     canonicalId: scenario.id || id, // e.g. 'S1' / 'CCT_SIM_S1' — what the AAR payload uses
-    title: scenario.title || id,
-    level: levelFrom(vignette, scenario),
+    title: displayTitle(level), // learner-facing name only (Easy / Hard / Peds)
+    level,
     theme: scenario.theme || '',
-    description: scenario.theme || scenario.title || id,
     // Student-facing only. Hidden state stays inside `raw` and is never
     // exposed by listScenarios(); the directive compiler filters it too.
     vignette,
@@ -115,11 +126,12 @@ function getScenario(id) {
   return cache.get(id) || null;
 }
 
-// Metadata only — never raw JSON, never hidden state.
+// Metadata only — never raw JSON, never hidden state, never the theme
+// (which would give away the diagnosis/complications).
 function listScenarios(tool) {
   return loadAll()
     .filter((s) => !tool || s.tool === tool)
-    .map((s) => ({ id: s.id, title: s.title, level: s.level, description: s.description }));
+    .map((s) => ({ id: s.id, title: s.title }));
 }
 
 module.exports = { loadAll, getScenario, listScenarios, SCENARIO_FILES, ENGINE_BLOCK_KEYS };

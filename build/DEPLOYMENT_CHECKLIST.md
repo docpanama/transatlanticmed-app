@@ -186,6 +186,27 @@ ready to deploy.
    `GET /health`. If the delivered `server.js` has no health endpoint, that
    is a proxy gap to fix, not a Render problem.)
 
+## Step 5b — Point the front end at the proxy
+
+The deployed site currently points at `http://localhost:3000` (local
+testing only), so it cannot reach the Render proxy until this is changed.
+
+1. In the GitHub repo, open `build/web/config.js` and click the pencil
+   (Edit this file).
+2. Change the `proxyUrl` line to your Render service URL, no trailing
+   slash, e.g. `"https://transatlanticmed-proxy.onrender.com"`.
+   ⚠️ Make sure the closing quote stays on the SAME line as the URL —
+   if it slips onto its own line below, the file breaks and the site
+   shows "No service address is configured". The line must read exactly:
+   `proxyUrl: "https://transatlanticmed-proxy.onrender.com",`
+3. Commit directly to `main`. The Deploy Pages workflow runs again
+   automatically and the live site picks up the new address within a
+   minute or two.
+4. ✅ **Check:** open the Pages URL — the "Checking connection to the
+   service…" line should clear and the scenario list should load. (The
+   first load after the proxy has been idle can take ~30–60 seconds
+   while the free Render service wakes up.)
+
 ## Step 6 — GitHub Pages: publish the front end
 
 1. In the repo, go to **Settings → Pages**.

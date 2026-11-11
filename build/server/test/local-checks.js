@@ -36,7 +36,7 @@ check('loader accepts nested shape (pfc-s1: engine_rules under directive)', () =
   const s = scenarios.getScenario('pfc-s1');
   assert.ok(s.blocks.engine_rules, 'engine_rules missing');
   assert.ok(s.blocks.session_start_behavior, 'session_start_behavior missing');
-  assert.strictEqual(s.title, 'The Delayed Evacuation');
+  assert.strictEqual(s.title, 'Easy');
   assert.strictEqual(s.level, 'Basic');
 });
 
@@ -45,7 +45,7 @@ check('loader accepts top-level shape (pfc-s2 v1.3.3: engine blocks at top level
   assert.ok(s.blocks.engine_rules, 'engine_rules missing');
   assert.ok(s.blocks.engine_patch, 'engine_patch missing');
   assert.ok(s.blocks.cognitive_offloading_policy, 'cognitive_offloading_policy missing');
-  assert.strictEqual(s.title, 'The Hypoxic Patient at Hour 14');
+  assert.strictEqual(s.title, 'Hard');
   assert.strictEqual(s.level, 'Advanced');
 });
 
@@ -56,7 +56,7 @@ check('loader accepts top-level shape (cct-s1..s3)', () => {
     assert.ok(s.blocks.simulation_mode_behavior, `${id}: simulation_mode_behavior missing`);
     assert.ok(s.blocks.time_control, `${id}: time_control missing`);
   }
-  assert.strictEqual(scenarios.getScenario('cct-s1').title, 'The Borderline Load');
+  assert.strictEqual(scenarios.getScenario('cct-s1').title, 'Easy');
   assert.strictEqual(scenarios.getScenario('cct-s2').level, 'Advanced');
   assert.strictEqual(scenarios.getScenario('cct-s3').level, 'Pediatric');
 });
@@ -65,7 +65,7 @@ check('listScenarios returns metadata only (no raw JSON, no hidden state)', () =
   const list = scenarios.listScenarios('role1');
   assert.strictEqual(list.length, 3);
   for (const m of list) {
-    assert.deepStrictEqual(Object.keys(m).sort(), ['description', 'id', 'level', 'title']);
+    assert.deepStrictEqual(Object.keys(m).sort(), ['id', 'title']);
     assert.ok(!JSON.stringify(m).includes('hidden_state'));
   }
   assert.strictEqual(scenarios.listScenarios('foxtwo').length, 3);
@@ -82,7 +82,7 @@ check('vignettes loaded for all 6 scenarios', () => {
 check('directive compiler includes engine rules and injects, strips hidden state', () => {
   const s = scenarios.getScenario('pfc-s2');
   const text = compileDirective(s);
-  assert.ok(text.includes('The Hypoxic Patient at Hour 14'));
+  assert.ok(text.includes('Scenario: Hard'));
   assert.ok(text.includes('Injects'));
   // Hidden-state BLOCKS must be gone (checked as JSON keys). Note the bare
   // phrase "hidden_state" legitimately appears inside engine_rules prose
@@ -96,7 +96,7 @@ check('directive compiler includes engine rules and injects, strips hidden state
 check('directive compiler works for a CCT scenario (resolution hooks included)', () => {
   const text = compileDirective(scenarios.getScenario('cct-s1'));
   assert.ok(text.includes('Resolution hooks'));
-  assert.ok(text.includes('The Borderline Load'));
+  assert.ok(text.includes('Scenario: Easy'));
   for (const key of ['"hidden_state"', '"true_problem_set"', '"primary_transport_killer"',
     '"arrest_risk_pathway"', '"discovery_nodes"', '"latent_risks"']) {
     assert.ok(!text.includes(key), `${key} leaked into compiled directive`);

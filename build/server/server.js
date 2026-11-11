@@ -24,6 +24,7 @@ const {
 } = require('./lib/aar');
 
 const app = express();
+
 // ---------------------------------------------------------------- CORS
 // The front end lives on GitHub Pages (and later app.transatlanticmed.com)
 // — a different origin from this proxy. Browsers block a page from
@@ -152,7 +153,7 @@ app.post('/api/session', (req, res) => {
       return res.status(400).json({ error: `scenario ${scenarioId} does not belong to tool ${tool}` });
     }
     vignette = scenario.vignette;
-    greeting = `You are on scene — ${scenario.title}. Read the vignette, then begin with your assessment and first actions.`;
+    greeting = `You are on scene. Read the vignette, then begin with your assessment and first actions.`;
   }
 
   const session = {

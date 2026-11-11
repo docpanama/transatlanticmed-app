@@ -2,7 +2,7 @@
  *
  * The browser talks ONLY to the proxy (see config.js). It never sees an
  * API key and never fetches scenario content — GET /api/scenarios returns
- * metadata only (id, title, level, description). All model / AAR work
+ * metadata only (id, title). All model / AAR work
  * happens server-side on the proxy.
  *
  * Proxy API contract:
@@ -208,38 +208,36 @@
     list.innerHTML = "";
 
     // No-scenario option: clinical decision support mode (no sim).
-    list.appendChild(scenarioItem(null, "Clinical decision support — no scenario",
-      "", "Ask a clinical question without running a simulation."));
+    // Choosing it starts a session immediately — no certification or
+    // experience questions; the questioner needs support now.
+    list.appendChild(scenarioItem(null, "Clinical decision support — no scenario"));
 
     state.scenarios.forEach(function (sc) {
-      list.appendChild(scenarioItem(sc.id, sc.title, sc.level, sc.description));
+      list.appendChild(scenarioItem(sc.id, sc.title));
     });
     updateScenarioSelection();
   }
 
-  function scenarioItem(id, title, level, description) {
+  // Scenario names are the difficulty only (Easy / Hard / Peds) — no
+  // description is shown, so nothing gives away the diagnosis or
+  // complications before the learner has examined the patient.
+  function scenarioItem(id, title) {
     var li = document.createElement("li");
     li.dataset.scenarioId = id === null ? "" : String(id);
     var titleEl = document.createElement("span");
     titleEl.className = "sc-title";
     titleEl.textContent = title;
     li.appendChild(titleEl);
-    if (level) {
-      var levelEl = document.createElement("span");
-      levelEl.className = "sc-level";
-      levelEl.textContent = level;
-      li.appendChild(levelEl);
-    }
-    if (description) {
-      var p = document.createElement("p");
-      p.textContent = description;
-      li.appendChild(p);
-    }
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "secondary small";
-    btn.textContent = "Select";
+    btn.textContent = id === null ? "Start now" : "Select";
     btn.addEventListener("click", function () {
+      if (id === null) {
+        // Clinical decision support: straight into the tool, no form.
+        startSession("", "");
+        return;
+      }
       state.selectedScenarioId = id;
       updateScenarioSelection();
     });
@@ -248,12 +246,23 @@
   }
 
   function updateScenarioSelection() {
+    var isCdt = state.selectedScenarioId === null;
     document.querySelectorAll("#scenario-list li").forEach(function (li) {
-      var isSelected = li.dataset.scenarioId === (state.selectedScenarioId === null ? "" : String(state.selectedScenarioId));
+      var isSelected = li.dataset.scenarioId === (isCdt ? "" : String(state.selectedScenarioId));
       li.classList.toggle("selected", isSelected);
       var btn = li.querySelector("button");
-      if (btn) btn.textContent = isSelected ? "Selected" : "Select";
+      if (!btn) return;
+      // The no-scenario card always offers "Start now"; scenario cards
+      // show Selected / Select.
+      if (li.dataset.scenarioId === "") btn.textContent = "Start now";
+      else btn.textContent = isSelected ? "Selected" : "Select";
     });
+    // "About you" (certification + experience) is collected for scenarios
+    // only — it is hidden for clinical decision support, and the Start
+    // button becomes a direct start.
+    var aboutYou = $("about-you");
+    if (aboutYou) aboutYou.classList.toggle("hidden", isCdt);
+    $("start-btn").textContent = isCdt ? "Start now" : "Start session";
   }
 
   // ---- Start form ----
@@ -263,28 +272,11 @@
     else hide($("cert-other-wrap"));
   });
 
-  $("start-form").addEventListener("submit", async function (ev) {
-    ev.preventDefault();
+  // Start a session. cert/experience are required for scenarios (the AAR
+  // needs them) and empty for clinical decision support — the proxy
+  // accepts empty values and CDT mode has no AAR.
+  async function startSession(cert, experience) {
     clearError($("start-error"));
-
-    var cert = certSelect.value;
-    if (cert === "Other") {
-      cert = $("cert-other").value.trim();
-      if (!cert) {
-        showError($("start-error"), "Please type your certification level.");
-        return;
-      }
-    }
-    var experience = $("experience").value;
-    if (!cert) {
-      showError($("start-error"), "Please choose your certification level.");
-      return;
-    }
-    if (!experience) {
-      showError($("start-error"), "Please choose your experience level.");
-      return;
-    }
-
     var btn = $("start-btn");
     btn.disabled = true;
     btn.textContent = "Starting\u2026";
@@ -309,8 +301,38 @@
       showError($("start-error"), errorMessage(e, "starting the session"));
     } finally {
       btn.disabled = false;
-      btn.textContent = "Start session";
+      updateScenarioSelection();
     }
+  }
+
+  $("start-form").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    clearError($("start-error"));
+
+    // Clinical decision support: no questions, straight in.
+    if (state.selectedScenarioId === null) {
+      startSession("", "");
+      return;
+    }
+
+    var cert = certSelect.value;
+    if (cert === "Other") {
+      cert = $("cert-other").value.trim();
+      if (!cert) {
+        showError($("start-error"), "Please type your certification level.");
+        return;
+      }
+    }
+    var experience = $("experience").value;
+    if (!cert) {
+      showError($("start-error"), "Please choose your certification level.");
+      return;
+    }
+    if (!experience) {
+      showError($("start-error"), "Please choose your experience level.");
+      return;
+    }
+    startSession(cert, experience);
   });
 
   // ---- Chat ----
