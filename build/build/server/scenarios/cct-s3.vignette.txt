@@ -1,0 +1,58 @@
+CCT-EDGE Vignette 3 (PEDIATRIC)
+Scenario Background
+You are the flight paramedic arriving with your crew to pick up a pediatric trauma patient from a Role 1 / forward aid station in a rural austere setting.
+
+Mission
+Rotary-wing evacuation (HH-60 abstraction)
+Estimated flight time to higher care: ~30 minutes
+Aircraft is on the ground and available to launch when you are ready
+
+Communications
+Radio available
+Teleconsult possible, but may be delayed
+
+Operational Constraints
+Limited space and limited resources
+Do not assume hospital-level capability
+Do not assume onboard oxygen or onboard suction beyond what is physically carried and actively used by the crew
+
+Patient
+6-year-old male
+
+Mechanism
+Ejected from ATV at moderate speed
+Impact to chest and side
+Injury occurred approximately 30 minutes ago
+
+Current Status
+The child is quiet, withdrawn, and minimally interactive.
+He is not resisting care but appears fatigued.
+A caregiver is present and states:
+“He was crying earlier but now he’s just… not acting right.”
+Role 1 provider reports no interventions beyond those listed and requests transport.
+
+Vital Signs
+HR: 148
+BP: 92/58
+RR: 32
+SpO₂: 93% on 10 L/min non-rebreather (maximum available at bedside)
+Mental status: responds to voice, limited verbal response
+
+Exam
+Quiet, decreased interaction
+Mild increased work of breathing
+Decreased breath sounds on the right
+Chest wall tenderness
+Pale skin
+Capillary refill delayed
+No obvious major external bleeding
+
+Interventions Already Performed
+IV access established
+250 mL crystalloid given
+Oxygen applied
+
+Your Task
+You are now at the bedside.Assess your patient and proceed.
+Begin with a structured assessment and management plan.
+You may use FoxTwo.GPT as your clinical decision-support tool during this scenario.

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Role1 &amp; FoxTwo — Clinical Decision Tools</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <h1>Role1 &amp; FoxTwo</h1>
+    <p>Clinical decision tools for prolonged field care and critical care transport</p>
+    <nav>
+      <a href="#guides">Guides</a>
+      <a href="docs/privacy-policy.html">Privacy policy</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Proxy / connection status. Shown on every screen. -->
+  <div id="status" class="status" role="status">Checking connection to the service&hellip;</div>
+
+  <!-- ============ VIEW 1: TOOL PICKER ============ -->
+  <section id="view-picker" aria-label="Choose a tool">
+    <h2>Choose a tool</h2>
+    <p class="lede">Each tool is two things: a clinical decision tool you can use right now,
+    and a training simulator. Pick the path you need.</p>
+
+    <div class="tool-grid">
+      <article class="card tool-card role1">
+        <span class="tag">Prolonged field care</span>
+        <h3>Role1</h3>
+        <p><strong>Role1</strong> is the clinical decision tool — point-of-care support
+        for frontline clinicians providing prolonged field care.</p>
+        <p><strong>PFC_EDGE</strong> is the simulation engine inside Role1 — it runs
+        training scenarios so you can practise using the tool.</p>
+        <div class="links">
+          <a href="docs/role1-what-is.html">What is Role1?</a>
+          <a href="docs/role1-how-to-use.html">How to use Role1</a>
+          <a href="docs/role1-student-instructions.html">Student instructions</a>
+        </div>
+        <button type="button" class="cdt-now" data-cdt="role1">Use Role1 now</button>
+        <button type="button" class="secondary" data-train="role1">Train with scenarios</button>
+      </article>
+
+      <article class="card tool-card foxtwo">
+        <span class="tag">Critical care en route</span>
+        <h3>FoxTwo</h3>
+        <p><strong>FoxTwo</strong> is the clinical decision tool — decision support and
+        reasoning for critical care transport.</p>
+        <p><strong>CCT_EDGE</strong> is the simulation engine inside FoxTwo — it runs
+        transport training scenarios so you can practise using the tool.</p>
+        <div class="links">
+          <a href="docs/foxtwo-what-is.html">What is FoxTwo?</a>
+          <a href="docs/foxtwo-how-to-use.html">How to use FoxTwo</a>
+          <a href="docs/foxtwo-student-instructions.html">Student instructions</a>
+        </div>
+        <button type="button" class="cdt-now" data-cdt="foxtwo">Use FoxTwo now</button>
+        <button type="button" class="secondary" data-train="foxtwo">Train with scenarios</button>
+      </article>
+    </div>
+
+    <section id="guides" class="card" aria-label="Guides">
+      <h2>Guides</h2>
+      <ul class="guides-list">
+        <li><span class="tool-label">Role1 —</span>
+          <a href="docs/role1-what-is.html">What is Role1?</a> &middot;
+          <a href="docs/role1-how-to-use.html">How to use</a> &middot;
+          <a href="docs/role1-student-instructions.html">Student instructions</a></li>
+        <li><span class="tool-label">FoxTwo —</span>
+          <a href="docs/foxtwo-what-is.html">What is FoxTwo?</a> &middot;
+          <a href="docs/foxtwo-how-to-use.html">How to use</a> &middot;
+          <a href="docs/foxtwo-student-instructions.html">Student instructions</a></li>
+        <li><span class="tool-label">Both tools —</span>
+          <a href="docs/privacy-policy.html">Privacy policy</a></li>
+      </ul>
+      <p class="lede" style="margin:12px 0 0;">These tools support clinical reasoning.
+      They do not replace clinical judgement, local protocols, or medical direction.</p>
+    </section>
+  </section>
+
+  <!-- ============ VIEW 2: SCENARIO + START ============ -->
+  <section id="view-start" class="hidden" aria-label="Start a session">
+    <h2 id="start-heading">Start a session</h2>
+    <p class="lede" id="start-lede"></p>
+
+    <div class="card">
+      <h3>Choose a scenario</h3>
+      <p class="lede">Pick a training scenario — Easy, Hard, or Peds.</p>
+      <div id="scenario-error" class="status error hidden" role="alert"></div>
+      <ul id="scenario-list" class="scenario-list"></ul>
+      <p id="scenario-loading">Loading scenarios&hellip;</p>
+    </div>
+
+    <form id="start-form" class="card" novalidate>
+      <div id="about-you">
+      <h3>About you</h3>
+      <p class="lede">Collected before the scenario starts, so nothing about the
+      scenario is shown before you are ready.</p>
+
+      <label for="cert-level">Certification level
+        <span class="hint">Choose the closest match, or choose Other and type your own.</span>
+      </label>
+      <select id="cert-level" name="certification_level" required>
+        <option value="" selected>Select your certification level</option>
+        <option>EMT</option>
+        <option>AEMT</option>
+        <option>Paramedic</option>
+        <option>Nurse</option>
+        <option>PA</option>
+        <option>Physician</option>
+        <option value="Other">Other</option>
+      </select>
+      <div id="cert-other-wrap" class="hidden">
+        <label for="cert-other">Your certification level</label>
+        <input type="text" id="cert-other" name="certification_level_other"
+               placeholder="e.g. Combat medic, Respiratory therapist" autocomplete="off">
+      </div>
+
+      <label for="experience">Experience
+        <span class="hint">Your experience with this kind of care. The service
+        uses this to set the level of guidance.</span>
+      </label>
+      <select id="experience" name="experience" required>
+        <option value="" selected>Select your experience</option>
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="expert">Expert</option>
+      </select>
+      </div>
+
+      <div id="start-error" class="status error hidden" role="alert"></div>
+
+      <div class="form-actions">
+        <button type="submit" id="start-btn">Start session</button>
+        <button type="button" class="secondary" id="back-to-picker">Back</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============ VIEW 3: CHAT ============ -->
+  <section id="view-chat" class="hidden" aria-label="Session">
+    <div class="chat-header">
+      <h2 id="chat-title">Session</h2>
+      <span class="session-meta" id="session-meta"></span>
+      <span class="header-links">
+        <a id="chat-guide-link" href="docs/role1-how-to-use.html">How to use</a>
+        <a href="docs/privacy-policy.html">Privacy policy</a>
+      </span>
+    </div>
+
+    <div class="card">
+      <ul id="messages" aria-live="polite"></ul>
+      <div id="typing" class="typing hidden">Working&hellip;</div>
+
+      <!-- AAR approval: shown only when the proxy replies aar_pending=true.
+           The approval message below is the proxy/model reply, shown exactly as returned. -->
+      <div id="aar-panel" class="aar-panel hidden">
+        <h3>After-action report ready</h3>
+        <p class="approval-message" id="aar-approval-message"></p>
+        <button type="button" id="aar-approve-btn">Approve &amp; download AAR</button>
+      </div>
+
+      <!-- Shown after a successful AAR download. -->
+      <div id="aar-complete" class="aar-complete hidden">
+        <p><strong>Scenario complete.</strong></p>
+        <p>Learner ID: <strong id="aar-learner-id"></strong></p>
+        <p><a id="aar-download-link" href="#" target="_blank" rel="noopener">Download your after-action report (.docx)</a></p>
+      </div>
+
+      <div id="chat-error" class="status error hidden" role="alert"></div>
+
+      <form id="chat-form">
+        <label for="chat-input">Your message</label>
+        <div class="chat-input-row">
+          <textarea id="chat-input" name="message" rows="2"
+                    placeholder="Describe what you see, what you are doing, or ask a question&hellip;"
+                    required></textarea>
+          <button type="submit" id="send-btn">Send</button>
+        </div>
+      </form>
+
+      <div class="chat-actions">
+        <button type="button" class="secondary" id="end-scenario-btn">End scenario</button>
+        <button type="button" class="secondary" id="new-session-btn">New session</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Role1 and FoxTwo are clinical decision support and training tools. They provide
+  advisory information only and do not replace clinical judgement, local protocols,
+  or medical direction. No patient-identifiable information should be entered.
+  <a href="docs/privacy-policy.html">Privacy policy</a></p>
+</footer>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
