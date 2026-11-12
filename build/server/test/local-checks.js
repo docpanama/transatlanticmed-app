@@ -178,6 +178,35 @@ check('reply with no state block is unchanged', () => {
   assert.strictEqual(stripStateBlock(reply), reply);
 });
 
+check('title-case state block stripped, narrative kept', () => {
+  const reply = 'The patient is loaded and the aircraft is ready to depart.\n\n'
+    + 'Loading\n'
+    + 'Vitals: BP 96/62, HR 122, SpO2 95%\n'
+    + 'Mental status: alert\n'
+    + 'Key exam findings: tense left calf\n'
+    + 'Transport constraints if relevant: none\n'
+    + 'Brief intervention log: IV access established';
+  const out = stripStateBlock(reply);
+  assert.ok(out.includes('The patient is loaded'));
+  assert.ok(!out.includes('Mental status:'));
+  assert.ok(!out.includes('Brief intervention log:'));
+  assert.ok(!out.includes('Loading\n'));
+});
+
+check('title-case block-only reply falls back to readable summary with phase', () => {
+  const reply = 'Airborne\n'
+    + 'Vitals: BP 90/58, HR 124, SpO2 94% on oxygen\n'
+    + 'Mental status: drowsy\n'
+    + 'Key exam findings: decreased breath sounds left\n'
+    + 'Brief intervention log: chest decompression performed';
+  const out = stripStateBlock(reply);
+  assert.ok(out.length > 0, 'fallback must not be empty');
+  assert.ok(out.startsWith('Status update'), 'fallback should be a readable summary');
+  assert.ok(out.includes('Phase: Airborne'), 'fallback should carry the phase');
+  assert.ok(out.includes('BP 90/58'), 'fallback should carry the vitals');
+  assert.ok(out.includes('Mental status: drowsy'), 'fallback should carry the values in readable form');
+});
+
 (async () => {
   if (process.env.AAR_PROBE === '1') {
     console.log('probe - POSTing ONE clearly-marked test payload to the AAR service…');

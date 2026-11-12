@@ -106,8 +106,9 @@ function sessionInstructions(session) {
       + 'When you cite a guideline, cite it by name in prose. Never leave an empty citation '
       + 'placeholder, blank bracket, or blank space where a citation should be; if you have '
       + 'no citation for a point, write the sentence without one.\n\n'
-      + 'Every reply must include narrative prose describing what the learner observes; '
-      + 'never reply with only the machine-readable state block.';
+      + 'Begin every reply with narrative prose (two to four sentences) describing what the learner '
+      + 'observes and what has changed, before any state block. Never reply with only the '
+      + 'machine-readable state block, and never reply with only field labels and values.';
   }
   return `${systemPrompt}\n\n---\n\n`
     + 'CLINICAL DECISION SUPPORT MODE — no scenario is loaded. There is no simulation '
