@@ -270,6 +270,12 @@ check('cct-s1 eFAST finding defined: pelvic free fluid, pelvis stable', () => {
   assert.ok(text.includes('US_EFAST'), 'eFAST trigger must reach the compiled directive');
   assert.ok(text.includes('efast_pelvic_free_fluid'), 'eFAST finding must reach the compiled directive');
   assert.ok(text.includes('pelvis'), 'pelvic exam must reach the compiled directive');
+  // The trigger carries a report instruction so the model states all four
+  // windows in its reply instead of narrating that the scan was completed.
+  assert.ok(efast.data.report && efast.data.report.includes('Pelvis: free fluid present'),
+    'US_EFAST must carry a report instruction with the window-by-window format');
+  assert.ok(text.includes('Pelvis: free fluid present'),
+    'eFAST report format must reach the compiled directive');
   // The hidden discovery node's value ('free_fluid_present') must NOT leak:
   // the model learns the finding only through the trigger data ('present').
   assert.ok(!text.includes('free_fluid_present'),
