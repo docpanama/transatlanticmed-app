@@ -250,6 +250,32 @@ check('telemed role defines availability, corpus-bounded knowledge, restraint, a
   assert.ok(TELEMED_ROLE.includes('**Telemedicine consult:**'), 'consult voice must be marked');
 });
 
+check('cct-s1 eFAST finding defined: pelvic free fluid, pelvis stable', () => {
+  const s = scenarios.getScenario('cct-s1');
+  const exam = s.scenario.patient.current_status.exam;
+  assert.strictEqual(exam.pelvis, 'stable', 'cct-s1 pelvis exam must be stable');
+  const triggers = s.scenario.injects.discovery_triggers;
+  const efast = triggers.find((t) => t.id === 'US_EFAST');
+  assert.ok(efast, 'US_EFAST trigger missing');
+  assert.strictEqual(efast.trigger.type, 'ULTRASOUND_PERFORMED');
+  assert.strictEqual(efast.data.efast_pelvic_free_fluid, 'present');
+  assert.strictEqual(efast.data.efast_morisons_pouch, 'no_free_fluid');
+  assert.strictEqual(efast.data.efast_pericardial, 'no_effusion');
+  assert.strictEqual(
+    s.scenario.hidden_state.discovery_nodes.efast_pelvis, 'free_fluid_present',
+  );
+  // The finding must reach the model: the trigger and the pelvic exam are
+  // both compiled into the directive (hidden_state itself is stripped).
+  const text = compileDirective(s);
+  assert.ok(text.includes('US_EFAST'), 'eFAST trigger must reach the compiled directive');
+  assert.ok(text.includes('efast_pelvic_free_fluid'), 'eFAST finding must reach the compiled directive');
+  assert.ok(text.includes('pelvis'), 'pelvic exam must reach the compiled directive');
+  // The hidden discovery node's value ('free_fluid_present') must NOT leak:
+  // the model learns the finding only through the trigger data ('present').
+  assert.ok(!text.includes('free_fluid_present'),
+    'hidden eFAST node value leaked into the compiled directive');
+});
+
 check('telemed consult marking survives state-block stripping', () => {
   const reply = 'You reach the telemedicine physician on the sat phone.\n\n'
     + '**Telemedicine consult:**\n'
