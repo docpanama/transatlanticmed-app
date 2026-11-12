@@ -240,6 +240,9 @@ check('telemed role defines availability, corpus-bounded knowledge, restraint, a
   assert.ok(TELEMED_ROLE.includes('no more, no less'), 'knowledge must be bounded by the corpus');
   assert.ok(TELEMED_ROLE.includes('vector-store corpus'), 'knowledge source must be the vector store');
   assert.ok(TELEMED_ROLE.includes('hidden scenario state'), 'must bar hidden state from the consult');
+  assert.ok(TELEMED_ROLE.includes('Treat every value the learner has not stated as unknown'), 'must treat unstated values as unknown');
+  assert.ok(TELEMED_ROLE.includes('Never assert a lab result'), 'must bar asserting unreported findings');
+  assert.ok(TELEMED_ROLE.includes('never infer one from the clinical picture'), 'must bar inferring findings from the picture');
   assert.ok(TELEMED_ROLE.includes('Do not take over the case'), 'must bar taking over the case');
   assert.ok(TELEMED_ROLE.includes('decision authority'), 'learner must keep decision authority');
   assert.ok(TELEMED_ROLE.includes('**Telemedicine consult:**'), 'consult voice must be marked');
