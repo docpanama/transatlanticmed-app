@@ -19,6 +19,7 @@ const assert = require('assert');
 const scenarios = require('../lib/scenarios');
 const { compileDirective } = require('../lib/directive');
 const { parseAarBlock, stripAarBlock, scrubPii, normalizeExperience, requestAar } = require('../lib/aar');
+const { stripStateBlock } = require('../lib/stateblock');
 
 let passed = 0;
 function check(name, fn) {
@@ -141,6 +142,40 @@ check('PII scrub removes emails, phones, SSN-style numbers', () => {
   assert.ok(!out.includes('928-555-0147'));
   assert.ok(!out.includes('123-45-6789'));
   assert.ok(!out.includes('1 Jan 1990'));
+});
+
+check('state block stripped from display reply, narrative kept', () => {
+  const reply = 'You arrive at the aircraft. The patient is loaded and the crew is ready.\n\n'
+    + '**State:**\n'
+    + 'timestamp_or_phase: loading\n'
+    + 'vitals unchanged: HR 110, BP 100/60\n'
+    + 'mental_status unchanged\n'
+    + 'key_exam_findings unchanged\n'
+    + 'brief_intervention_log: IV access established';
+  const out = stripStateBlock(reply);
+  assert.ok(out.includes('You arrive at the aircraft.'));
+  assert.ok(!out.includes('timestamp_or_phase'));
+  assert.ok(!out.includes('brief_intervention_log'));
+  assert.ok(!out.includes('**State:**'));
+});
+
+check('state-block-only reply falls back to readable text, not empty', () => {
+  const reply = 'timestamp: after initial assessment/actions\n'
+    + 'vitals: HR 118, BP 90/58\n'
+    + 'mental_status: alert\n'
+    + 'key_exam_findings: tense left calf\n'
+    + 'urine_output_if_relevant: 10-15 mL/hr\n'
+    + 'brief_intervention_log: 2L crystalloids given';
+  const out = stripStateBlock(reply);
+  assert.ok(out.length > 0, 'fallback must not be empty');
+  assert.ok(!out.includes('timestamp:'));
+  assert.ok(!out.includes('brief_intervention_log'));
+  assert.ok(out.includes('HR 118'), 'fallback should carry the vitals');
+});
+
+check('reply with no state block is unchanged', () => {
+  const reply = 'The patient remains stable.\nVitals remain steady and the crew is ready to move.';
+  assert.strictEqual(stripStateBlock(reply), reply);
 });
 
 (async () => {

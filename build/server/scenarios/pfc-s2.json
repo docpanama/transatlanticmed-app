@@ -17,10 +17,6 @@
       "advance_to_next_meaningful_event": true
     },
     "intake": {
-      "require_user_declaration": [
-        "certification_level",
-        "experience"
-      ],
       "operational_constraints_source": "SCENARIO_ONLY",
       "no_resource_invention": true
     },
@@ -165,9 +161,7 @@
     ]
   },
   "session_start_sequence": [
-    "Prompt learner to declare certification_level and experience before rendering any scene or patient data.",
-    "If either is missing, ask again and do not proceed.",
-    "After both are declared, render the scene-setting paragraph and then present the initial patient presentation."
+    "Render the scene-setting paragraph and then present the initial patient presentation. The learner's certification level and experience are already provided in the session context; do not ask the learner to declare or restate them."
   ],
   "scope_modulation": {
     "certification_profiles": {

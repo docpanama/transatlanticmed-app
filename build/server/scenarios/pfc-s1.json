@@ -124,11 +124,7 @@
   },
   "intake": {
    "no_resource_invention": true,
-   "operational_constraints_source": "SCENARIO_ONLY",
-   "require_user_declaration": [
-    "certification_level",
-    "experience"
-   ]
+   "operational_constraints_source": "SCENARIO_ONLY"
   },
   "knowledge": {
    "clinical_reference_allowed": true,
@@ -235,9 +231,7 @@
    ]
   },
   "session_start_sequence": [
-   "Prompt learner to declare certification_level and experience before rendering any scene or patient data.",
-   "If either is missing, ask again and do not proceed.",
-   "After both are declared, render the scene-setting paragraph (scenario.scene_initializer) and then present the initial patient presentation."
+   "Render the scene-setting paragraph (scenario.scene_initializer) and then present the initial patient presentation. The learner's certification level and experience are already provided in the session context; do not ask the learner to declare or restate them."
   ],
   "state": {
    "continuity_scope": "SESSION_ONLY"

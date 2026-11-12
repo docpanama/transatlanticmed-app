@@ -484,7 +484,7 @@
       }
       // AAR flow: the proxy signals the scenario is ready to close.
       if (data && data.aar_pending === true) {
-        showAarPanel(data.reply || "");
+        showAarPanel();
       }
     } catch (e) {
       hide($("typing"));
@@ -500,10 +500,14 @@
   });
 
   // ---- AAR flow ----
-  // The approval message is the proxy/model reply, shown exactly as returned.
-  function showAarPanel(approvalMessage) {
+  // The full AAR text is already in the chat as the model's reply; the
+  // panel is only the approval control, so it shows a short prompt
+  // instead of repeating the whole report.
+  function showAarPanel() {
     state.aarPending = true;
-    $("aar-approval-message").textContent = approvalMessage;
+    $("aar-approval-message").textContent =
+      "Your after-action report is ready. Review it in the chat above, " +
+      "then approve to generate your downloadable report.";
     show($("aar-panel"));
     $("aar-panel").scrollIntoView({ block: "nearest" });
   }
@@ -539,13 +543,61 @@
   });
 
   // ---- End scenario / New session ----
-  $("end-scenario-btn").addEventListener("click", function () {
-    if (state.sessionEnded) return;
-    state.sessionEnded = true;
-    setChatEnabled(false);
-    hide($("aar-panel"));
-    addMessage("system", "Scenario ended. Start a new session to begin again, " +
-      "or use “New session” to choose a different tool or scenario.");
+  // Ending a scenario runs the same AAR flow as declaring the exercise
+  // complete in chat: the button sends a completion message through the
+  // normal chat path, the model presents the AAR, and the approve /
+  // download panel follows. No new server endpoint is needed.
+  // Clinical decision support has no scenario and no AAR, so there the
+  // button just ends the session locally as before.
+  $("end-scenario-btn").addEventListener("click", async function () {
+    if (state.sessionEnded || !state.sessionId) return;
+    // An AAR is already waiting for approval — just stop the chat and
+    // leave the panel visible.
+    if (state.aarPending) {
+      state.sessionEnded = true;
+      setChatEnabled(false);
+      addMessage("system", "Scenario ended. Your after-action report is ready below.");
+      return;
+    }
+    // No scenario loaded (clinical decision support): no AAR exists.
+    if (state.selectedScenarioId === null) {
+      state.sessionEnded = true;
+      setChatEnabled(false);
+      addMessage("system", "Session ended. Start a new session to begin again, " +
+        "or use “New session” to choose a different tool or scenario.");
+      return;
+    }
+    var btn = $("end-scenario-btn");
+    btn.disabled = true;
+    addMessage("system", "You ended the scenario. Requesting the after-action review\u2026");
+    show($("typing"));
+    clearError($("chat-error"));
+    try {
+      var data = await apiPost("/api/chat", {
+        session_id: state.sessionId,
+        message: "I declare the exercise complete. Please present the after-action review."
+      });
+      hide($("typing"));
+      if (data && typeof data.reply === "string" && data.reply) {
+        addMessage("model", data.reply, toolName(state.tool));
+      }
+      if (data && data.aar_pending === true) {
+        showAarPanel();
+        state.sessionEnded = true;
+        setChatEnabled(false);
+      } else {
+        // The model did not produce an AAR (it may have asked a question
+        // instead). Leave the session open so the learner can continue
+        // or declare the exercise complete in chat.
+        addMessage("system", "The after-action review was not ready yet. You can " +
+          "continue the scenario, or declare the exercise complete in chat.");
+        btn.disabled = false;
+      }
+    } catch (e) {
+      hide($("typing"));
+      showError($("chat-error"), errorMessage(e, "ending the scenario"));
+      btn.disabled = false;
+    }
   });
 
   $("new-session-btn").addEventListener("click", function () {

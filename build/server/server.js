@@ -22,6 +22,7 @@ const { chatCompletion } = require('./lib/openai');
 const {
   parseAarBlock, stripAarBlock, normalizeExperience, requestAar,
 } = require('./lib/aar');
+const { stripStateBlock } = require('./lib/stateblock');
 
 const app = express();
 
@@ -99,7 +100,14 @@ function sessionInstructions(session) {
       + 'Recommended Focus for Future Training. '
       + 'Never include any personal identifying information (names, emails, phone numbers, '
       + 'ID numbers) anywhere in the reply or in aar_text. Do not emit the JSON block until '
-      + 'the scenario has actually ended.';
+      + 'the scenario has actually ended.\n\n'
+      + 'Do not repeat the opening vignette or the scene-setting paragraph in later replies; '
+      + 'the learner has already read it.\n\n'
+      + 'When you cite a guideline, cite it by name in prose. Never leave an empty citation '
+      + 'placeholder, blank bracket, or blank space where a citation should be; if you have '
+      + 'no citation for a point, write the sentence without one.\n\n'
+      + 'Every reply must include narrative prose describing what the learner observes; '
+      + 'never reply with only the machine-readable state block.';
   }
   return `${systemPrompt}\n\n---\n\n`
     + 'CLINICAL DECISION SUPPORT MODE — no scenario is loaded. There is no simulation '
@@ -224,10 +232,20 @@ app.post('/api/chat', async (req, res) => {
     if (!payload.scenario_title && session.scenario) payload.scenario_title = session.scenario.title;
     session.pendingAar = payload;
     aarPending = true;
-    reply = `${reply}\n\nYour AAR is ready. Approve the next prompt to generate your downloadable report.`;
+    // The model is instructed to display this line itself, so it is
+    // usually already in the reply — only append it when it is missing,
+    // or the learner sees it twice.
+    if (!/Your AAR is ready/i.test(reply)) {
+      reply = `${reply}\n\nYour AAR is ready. Approve the next prompt to generate your downloadable report.`;
+    }
   }
 
-  res.json({ reply, aar_pending: aarPending });
+  // Display text only: hide the machine-readable state block from the
+  // learner. History keeps the full reply (stored above) so the sim
+  // retains its own state record across turns. Sim mode only — the
+  // block does not exist in clinical decision support.
+  const displayReply = session.scenario ? stripStateBlock(reply) : reply;
+  res.json({ reply: displayReply, aar_pending: aarPending });
 });
 
 app.post('/api/aar', async (req, res) => {
