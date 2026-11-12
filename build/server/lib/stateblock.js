@@ -28,6 +28,17 @@
 // lines are removed; narrative prose (including an "Additional data
 // now available:" list) is kept.
 
+// The model is instructed to emit the state update ONLY inside a fenced
+// ```state block at the very end of the reply. That is the form the
+// stripper targets first: fenced blocks are removed whole, and their
+// inner lines feed the fallback summary. The field-line matching below
+// stays as a backstop for state the model emits outside the fence
+// (it has rendered the same fields as snake_case, title-case labels,
+// and unlabeled bullets across runs, so the fence is the reliable
+// contract and the field matching is the safety net). Bullet lists are
+// never stripped generically: legitimate content (lab results, data
+// lists) also uses bullets.
+
 // Field names, longest first so "timestamp_or_phase" matches before
 // "timestamp".
 const STATE_FIELDS = [
@@ -139,16 +150,29 @@ function stateBlockSummary(strippedLines, phase) {
   return `Status update — ${parts.join('. ')}.`;
 }
 
-// Remove the state block (heading + field lines) from a reply, keeping
-// narrative prose. If nothing with real content remains, fall back to a
-// short readable status line derived from the block instead of an
-// empty message. Replies with no state block are returned unchanged.
+// Remove the state block (fenced block, heading, field lines, phase
+// headings) from a reply, keeping narrative prose. If nothing with real
+// content remains, fall back to a short readable status line derived
+// from the block instead of an empty message. Replies with no state
+// block are returned unchanged.
 function stripStateBlock(reply) {
   if (typeof reply !== 'string') return reply;
-  const kept = [];
   const stripped = [];
   let phase = null;
-  for (const line of reply.split('\n')) {
+  // Fenced state blocks first: remove the fence whole, keeping its
+  // inner lines for the fallback summary.
+  let text = reply.replace(/```state\r?\n([\s\S]*?)```/g, (_m, inner) => {
+    for (const line of inner.split('\n')) stripped.push(line);
+    return '';
+  });
+  // A trailing unclosed fence: everything after it is state content.
+  const openIdx = text.indexOf('```state');
+  if (openIdx !== -1) {
+    for (const line of text.slice(openIdx).split('\n').slice(1)) stripped.push(line);
+    text = text.slice(0, openIdx);
+  }
+  const kept = [];
+  for (const line of text.split('\n')) {
     if (isStateHeading(line)) { stripped.push(line); continue; }
     const phaseLabel = isPhaseHeading(line);
     if (phaseLabel) { stripped.push(line); phase = phase || phaseLabel; continue; }
@@ -158,9 +182,10 @@ function stripStateBlock(reply) {
   const out = kept.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   // Real content remains (at least one letter or digit): keep it.
   if (/[A-Za-z0-9]/.test(out)) return out;
-  // Nothing real left. If a state block was stripped, summarise it;
-  // otherwise return the reply untouched.
-  if (stripped.some((line) => parseStateFieldLine(line) || isPhaseHeading(line))) {
+  // Nothing real left. If a state block was stripped (fence, heading,
+  // phase heading, or field lines), summarise it; otherwise return the
+  // reply untouched.
+  if (stripped.length > 0) {
     return stateBlockSummary(stripped, phase);
   }
   return reply;

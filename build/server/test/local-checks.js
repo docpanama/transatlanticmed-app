@@ -207,6 +207,33 @@ check('title-case block-only reply falls back to readable summary with phase', (
   assert.ok(out.includes('Mental status: drowsy'), 'fallback should carry the values in readable form');
 });
 
+check('fenced state block removed, narrative kept', () => {
+  const reply = 'The patient is loaded and the aircraft is ready to depart.\n\n'
+    + '```state\n'
+    + 'timestamp_or_phase: loading\n'
+    + 'vitals: BP 96/62, HR 122\n'
+    + 'mental_status: alert\n'
+    + '```';
+  const out = stripStateBlock(reply);
+  assert.ok(out.includes('The patient is loaded'));
+  assert.ok(!out.includes('```state'));
+  assert.ok(!out.includes('timestamp_or_phase'));
+  assert.ok(!out.includes('mental_status'));
+});
+
+check('fenced block-only reply falls back to readable summary', () => {
+  const reply = '```state\n'
+    + 'timestamp_or_phase: airborne\n'
+    + 'vitals: BP 90/58, HR 124\n'
+    + 'brief_intervention_log: chest decompression performed\n'
+    + '```';
+  const out = stripStateBlock(reply);
+  assert.ok(out.length > 0, 'fallback must not be empty');
+  assert.ok(out.startsWith('Status update'), 'fallback should be a readable summary');
+  assert.ok(!out.includes('```state'));
+  assert.ok(out.includes('BP 90/58'), 'fallback should carry the vitals');
+});
+
 (async () => {
   if (process.env.AAR_PROBE === '1') {
     console.log('probe - POSTing ONE clearly-marked test payload to the AAR service…');

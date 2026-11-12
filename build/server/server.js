@@ -108,7 +108,10 @@ function sessionInstructions(session) {
       + 'no citation for a point, write the sentence without one.\n\n'
       + 'Begin every reply with narrative prose (two to four sentences) describing what the learner '
       + 'observes and what has changed, before any state block. Never reply with only the '
-      + 'machine-readable state block, and never reply with only field labels and values.';
+      + 'machine-readable state block, and never reply with only field labels and values.\n\n'
+      + 'Emit the machine-readable state update ONLY inside a fenced ```state block at the very '
+      + 'end of your reply, after the narrative prose. Never emit state fields, field labels, '
+      + 'or state bullet lists outside that fence.';
   }
   return `${systemPrompt}\n\n---\n\n`
     + 'CLINICAL DECISION SUPPORT MODE — no scenario is loaded. There is no simulation '
