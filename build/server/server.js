@@ -23,6 +23,7 @@ const {
   parseAarBlock, stripAarBlock, normalizeExperience, requestAar,
 } = require('./lib/aar');
 const { stripStateBlock } = require('./lib/stateblock');
+const { TELEMED_ROLE } = require('./lib/telemed');
 
 const app = express();
 
@@ -111,7 +112,8 @@ function sessionInstructions(session) {
       + 'machine-readable state block, and never reply with only field labels and values.\n\n'
       + 'Emit the machine-readable state update ONLY inside a fenced ```state block at the very '
       + 'end of your reply, after the narrative prose. Never emit state fields, field labels, '
-      + 'or state bullet lists outside that fence.';
+      + 'or state bullet lists outside that fence.\n\n'
+      + TELEMED_ROLE;
   }
   return `${systemPrompt}\n\n---\n\n`
     + 'CLINICAL DECISION SUPPORT MODE — no scenario is loaded. There is no simulation '

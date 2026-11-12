@@ -20,6 +20,7 @@ const scenarios = require('../lib/scenarios');
 const { compileDirective } = require('../lib/directive');
 const { parseAarBlock, stripAarBlock, scrubPii, normalizeExperience, requestAar } = require('../lib/aar');
 const { stripStateBlock } = require('../lib/stateblock');
+const { TELEMED_ROLE } = require('../lib/telemed');
 
 let passed = 0;
 function check(name, fn) {
@@ -232,6 +233,31 @@ check('fenced block-only reply falls back to readable summary', () => {
   assert.ok(out.startsWith('Status update'), 'fallback should be a readable summary');
   assert.ok(!out.includes('```state'));
   assert.ok(out.includes('BP 90/58'), 'fallback should carry the vitals');
+});
+
+check('telemed role defines availability, corpus-bounded knowledge, restraint, and voice marking', () => {
+  assert.ok(TELEMED_ROLE.includes('always available'), 'telemed must be always available');
+  assert.ok(TELEMED_ROLE.includes('no more, no less'), 'knowledge must be bounded by the corpus');
+  assert.ok(TELEMED_ROLE.includes('vector-store corpus'), 'knowledge source must be the vector store');
+  assert.ok(TELEMED_ROLE.includes('hidden scenario state'), 'must bar hidden state from the consult');
+  assert.ok(TELEMED_ROLE.includes('Do not take over the case'), 'must bar taking over the case');
+  assert.ok(TELEMED_ROLE.includes('decision authority'), 'learner must keep decision authority');
+  assert.ok(TELEMED_ROLE.includes('**Telemedicine consult:**'), 'consult voice must be marked');
+});
+
+check('telemed consult marking survives state-block stripping', () => {
+  const reply = 'You reach the telemedicine physician on the sat phone.\n\n'
+    + '**Telemedicine consult:**\n'
+    + 'What are the current vitals and what have you given so far?\n\n'
+    + '```state\n'
+    + 'timestamp_or_phase: hour 6\n'
+    + 'vitals: HR 118, BP 90/58\n'
+    + '```';
+  const out = stripStateBlock(reply);
+  assert.ok(out.includes('**Telemedicine consult:**'), 'consult marking must survive stripping');
+  assert.ok(out.includes('What are the current vitals'), 'consult words must survive stripping');
+  assert.ok(!out.includes('```state'), 'state block must still be stripped');
+  assert.ok(!out.includes('timestamp_or_phase'));
 });
 
 (async () => {
