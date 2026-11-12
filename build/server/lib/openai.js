@@ -82,9 +82,13 @@ async function callResponsesOnce({ instructions, input, vectorStoreId, temperatu
 // history: [{ role: 'user'|'assistant', content: string }, ...]
 // Returns the assistant's reply text.
 async function chatCompletion({ instructions, history, vectorStoreId }) {
+  // The Responses API distinguishes content by role: user messages carry
+  // input_text, assistant messages carry output_text. Sending an assistant
+  // message as input_text is a 400 — which broke every second turn (turn 1
+  // has only a user message, so it worked; turn 2 includes the sim's reply).
   const input = history.map((m) => ({
     role: m.role,
-    content: [{ type: 'input_text', text: m.content }],
+    content: [{ type: m.role === 'assistant' ? 'output_text' : 'input_text', text: m.content }],
   }));
   const temperature = config.openaiTemperature;
   try {
