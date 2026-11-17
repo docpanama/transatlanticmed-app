@@ -25,7 +25,11 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: url(assets/bg-texture.jpg);
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
 }
 
 h1, h2, h3 {
@@ -79,6 +83,7 @@ p.lede { color: var(--muted); margin: 0 0 16px; }
 .hero-logo { max-width: 560px; width: 92%; height: auto; }
 .hero-tagline { font-family: "Source Serif 4", Georgia, "Times New Roman", serif; color: var(--muted); font-size: 1.05rem; margin: 6px 0 8px; }
 .trust-strip { font-family: "Source Serif 4", Georgia, "Times New Roman", serif; text-align: center; color: var(--muted); font-size: 1rem; margin: 2px 0 20px; }
+.choose-heading { text-align: center; font-size: 1.8rem; margin: 8px 0 16px; }
 .hero-disclaimer { font-size: 0.9rem; color: var(--ink); margin: 0 0 8px; }
 .tool-logo { max-height: 84px; width: auto; max-width: 100%; margin: 2px auto 10px; }
 
