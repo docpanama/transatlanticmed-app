@@ -20,7 +20,7 @@ const { compileDirective } = require('./lib/directive');
 const prompts = require('./lib/prompts');
 const { chatCompletion } = require('./lib/openai');
 const {
-  parseAarBlock, stripAarBlock, normalizeExperience, requestAar,
+  parseAarBlock, stripAarBlock, normalizeExperience, requestAar, AAR_REVIEW_NOTE,
 } = require('./lib/aar');
 const { stripStateBlock } = require('./lib/stateblock');
 const { TELEMED_ROLE } = require('./lib/telemed');
@@ -243,6 +243,10 @@ app.post('/api/chat', async (req, res) => {
     if (!payload.scenario_title && session.scenario) payload.scenario_title = session.scenario.title;
     session.pendingAar = payload;
     aarPending = true;
+    // Fixed completion note (Matt's wording): appended server-side so the
+    // learner sees it in the chat AAR view. The same sentence is appended
+    // to aar_text in requestAar() for the downloadable .docx.
+    reply = `${reply}\n\n${AAR_REVIEW_NOTE}`;
     // The model is instructed to display this line itself, so it is
     // usually already in the reply — only append it when it is missing,
     // or the learner sees it twice.

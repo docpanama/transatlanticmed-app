@@ -18,6 +18,14 @@ const config = require('./config');
 const AAR_KEYS = ['certification_level', 'experience', 'scenario_id', 'scenario_title', 'aar_text'];
 const AAR_KEYS_SORTED = [...AAR_KEYS].sort();
 
+// Fixed completion note (Matt's wording, Nov 2026): the learner reviews
+// the AAR with an instructor, supervisor, or medical director to complete
+// the learning exercise. Appended server-side to every aar_text so it
+// appears in every downloadable AAR .docx. The same sentence is appended
+// to the chat reply in server.js so it also appears in the chat AAR view
+// (aar_text itself never reaches the browser).
+const AAR_REVIEW_NOTE = 'The intent is that you review the AAR with your instructor, supervisor, or medical director to complete the learning exercise.';
+
 const EXPERIENCE_MAP = {
   beginner: 'novice',
   novice: 'novice',
@@ -98,7 +106,7 @@ async function requestAar(payload) {
     experience: normalizeExperience(payload.experience),
     scenario_id: payload.scenario_id,
     scenario_title: payload.scenario_title,
-    aar_text: scrubPii(payload.aar_text),
+    aar_text: `${scrubPii(payload.aar_text).trim()}\n\n${AAR_REVIEW_NOTE}`,
   };
   const res = await fetch(`${config.aarServiceUrl}/generate-aar`, {
     method: 'POST',
@@ -115,4 +123,4 @@ async function requestAar(payload) {
   return { learner_id: data.learner_id, download_url: downloadUrl };
 }
 
-module.exports = { parseAarBlock, stripAarBlock, scrubPii, normalizeExperience, requestAar, AAR_KEYS };
+module.exports = { parseAarBlock, stripAarBlock, scrubPii, normalizeExperience, requestAar, AAR_KEYS, AAR_REVIEW_NOTE };
