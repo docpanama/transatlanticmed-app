@@ -78,8 +78,8 @@ function newSessionId() {
 }
 
 const CDT_GREETINGS = {
-  role1: 'No scenario loaded — clinical decision support mode. Describe the clinical situation — patient, setting, resources, and what you need help with — and we will work through it together.',
-  foxtwo: 'No scenario loaded — clinical decision support mode. Describe the transport situation — patient, phase of movement, resources, and what you need help with — and we will work through it together.',
+  role1: 'CLINICAL DECISION SUPPORT MODE. Describe the clinical situation — patient, setting, resources, and what you need help with — and we will work through it together.',
+  foxtwo: 'CLINICAL DECISION SUPPORT MODE. Describe the transport situation — patient, phase of movement, resources, and what you need help with — and we will work through it together.',
 };
 
 function sessionInstructions(session) {

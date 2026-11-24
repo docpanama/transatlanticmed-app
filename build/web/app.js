@@ -424,13 +424,29 @@
     hide($("aar-panel"));
     hide($("aar-complete"));
     clearError($("chat-error"));
+    // No scenario in clinical decision support mode, so there is nothing
+    // to end — the End scenario button only belongs on scenario sessions.
+    if (state.selectedScenarioId === null) hide($("end-scenario-btn"));
+    else show($("end-scenario-btn"));
     setChatEnabled(true);
     goToView("chat");
 
     // Vignette + greeting come from the proxy. The vignette is plain text
     // the proxy is allowed to send; scenario JSON itself never reaches us.
     if (sessionData.vignette) addMessage("model", sessionData.vignette, "Scenario");
-    if (sessionData.greeting) addMessage("model", sessionData.greeting, toolName(state.tool));
+    if (sessionData.greeting) {
+      // CDT greeting leads with the mode label, rendered bold. The label
+      // is part of the proxy's greeting text; split it off here so it can
+      // be a <strong> element (messages are textContent-only, no HTML).
+      // If the proxy text ever changes shape, this falls back to the
+      // plain greeting.
+      var cdtLead = "CLINICAL DECISION SUPPORT MODE.";
+      if (state.selectedScenarioId === null && sessionData.greeting.indexOf(cdtLead + " ") === 0) {
+        addMessage("model", sessionData.greeting.slice(cdtLead.length + 1), toolName(state.tool), cdtLead);
+      } else {
+        addMessage("model", sessionData.greeting, toolName(state.tool));
+      }
+    }
     if (!sessionData.vignette && !sessionData.greeting) {
       addMessage("system", "Session started. Describe the situation or ask your question.");
     }
@@ -438,8 +454,9 @@
 
   // All message text is added via textContent (never innerHTML), so model
   // output is rendered as plain text. CSS white-space: pre-wrap preserves
-  // its line breaks.
-  function addMessage(role, text, who) {
+  // its line breaks. The optional lead is rendered bold ahead of the text
+  // (used for the CDT mode label), separated by a single space.
+  function addMessage(role, text, who, lead) {
     var li = document.createElement("li");
     li.className = "message " + role;
     var whoEl = document.createElement("span");
@@ -447,7 +464,14 @@
     whoEl.textContent = who || (role === "user" ? "You" : toolName(state.tool));
     li.appendChild(whoEl);
     var body = document.createElement("span");
-    body.textContent = text;
+    if (lead) {
+      var leadEl = document.createElement("strong");
+      leadEl.textContent = lead;
+      body.appendChild(leadEl);
+      body.appendChild(document.createTextNode(" " + text));
+    } else {
+      body.textContent = text;
+    }
     li.appendChild(body);
     $("messages").appendChild(li);
     li.scrollIntoView({ block: "nearest" });
@@ -547,8 +571,9 @@
   // complete in chat: the button sends a completion message through the
   // normal chat path, the model presents the AAR, and the approve /
   // download panel follows. No new server endpoint is needed.
-  // Clinical decision support has no scenario and no AAR, so there the
-  // button just ends the session locally as before.
+  // Clinical decision support has no scenario and no AAR, so the button
+  // is hidden there (see openChat); the CDT branch below is only a
+  // fallback if the button is ever shown in that mode.
   $("end-scenario-btn").addEventListener("click", async function () {
     if (state.sessionEnded || !state.sessionId) return;
     // An AAR is already waiting for approval — just stop the chat and
