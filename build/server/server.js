@@ -152,6 +152,15 @@ app.get('/api/scenarios', (req, res) => {
   res.json(scenarios.listScenarios(tool || null));
 });
 
+// Liveness check for a stored session id. The front end keeps CDT chats
+// in sessionStorage and verifies the server still holds the session
+// before resuming one. Returns only whether the session exists.
+app.get('/api/session/:id', (req, res) => {
+  const session = sessions.get(req.params.id);
+  if (!session) return res.status(404).json({ error: 'unknown session_id' });
+  res.json({ ok: true, tool: session.tool });
+});
+
 app.post('/api/session', (req, res) => {
   const { tool, scenario_id: scenarioId, certification_level, experience } = req.body || {};
   if (tool !== 'role1' && tool !== 'foxtwo') {

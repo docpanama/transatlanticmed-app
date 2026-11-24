@@ -9,6 +9,7 @@
  *   GET  {proxy}/health
  *   GET  {proxy}/api/scenarios?tool=role1|foxtwo
  *   POST {proxy}/api/session  {tool, scenario_id, certification_level, experience}
+ *   GET  {proxy}/api/session/:id                -> {ok, tool} or 404
  *   POST {proxy}/api/chat     {session_id, message}          -> {reply, aar_pending}
  *   POST {proxy}/api/aar      {session_id}                   -> {learner_id, download_url}
  * download_url is a path on the AAR service (e.g. /download/XXXX.docx);
@@ -66,7 +67,7 @@
       return "The service is not set up yet — no API key is configured on the server. " +
         "Please try again later or contact the owner.";
     }
-    if (/session (expired|not found|invalid)/i.test(msg) || err && err.status === 401 || err && err.status === 410) {
+    if (/session (expired|not found|invalid)/i.test(msg) || /unknown session/i.test(msg) || err && err.status === 401 || err && err.status === 410) {
       return "Your session has expired. Please start a new session.";
     }
     if (err && err.status === 429) {
@@ -197,8 +198,18 @@
   // questions. Train button: scenarios — the start view with the
   // certification/experience form.
   document.querySelectorAll("[data-cdt]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      state.tool = btn.getAttribute("data-cdt");
+    btn.addEventListener("click", async function () {
+      var tool = btn.getAttribute("data-cdt");
+      // A chat for this tool already exists in this tab: resume it
+      // instead of starting a fresh one. Chats persist until the tab
+      // is closed; only "New session" inside the chat starts over.
+      try {
+        if (await resumeCdtSession(tool)) return;
+      } catch (e) {
+        setStatus(errorMessage(e, "reaching the service"), "error");
+        return;
+      }
+      state.tool = tool;
       state.selectedScenarioId = null;
       state.sessionId = null;
       state.sessionEnded = false;
@@ -411,8 +422,98 @@
     startSession(cert, experience);
   });
 
+  // ---- CDT chat persistence (sessionStorage) ----
+  // A clinical decision support chat persists for the life of the tab:
+  // leaving the chat view and coming back resumes the same conversation,
+  // and so does reloading the page. Closing the tab ends it, because
+  // sessionStorage dies with the tab. Scenario sessions are NOT
+  // persisted: a transcript alone cannot resume a scenario position or
+  // its AAR state.
+  var cdtTranscript = []; // messages of the active CDT session
+  var restoringCdt = false; // true while re-rendering a stored transcript
+
+  function cdtStoreKey(tool) { return "transatlanticmed.cdt." + tool; }
+
+  function loadCdtSession(tool) {
+    try {
+      var raw = sessionStorage.getItem(cdtStoreKey(tool));
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (!data || !data.sessionId || !Array.isArray(data.messages)) return null;
+      return data;
+    } catch (e) { return null; }
+  }
+
+  function saveCdtSession(tool, sessionId, messages) {
+    try {
+      sessionStorage.setItem(cdtStoreKey(tool),
+        JSON.stringify({ sessionId: sessionId, messages: messages }));
+    } catch (e) { /* storage full or unavailable: the chat still works, it just won't resume */ }
+  }
+
+  function clearCdtSession(tool) {
+    try { sessionStorage.removeItem(cdtStoreKey(tool)); } catch (e) { /* ignore */ }
+  }
+
+  // Resume a stored CDT chat for this tool, if one exists. Returns true
+  // when a chat was opened (live or expired), false when there is
+  // nothing stored. Throws on a service failure (not a missing session).
+  async function resumeCdtSession(tool) {
+    var stored = loadCdtSession(tool);
+    if (!stored) return false;
+    // The proxy keeps sessions in memory, so a restart (deploy, sleep)
+    // since the chat was stored means the session is gone server-side.
+    // Verify before resuming; only a 404 means expired.
+    try {
+      await apiGet("/api/session/" + encodeURIComponent(stored.sessionId));
+    } catch (e) {
+      if (e && e.status === 404) {
+        openStoredCdtTranscript(tool, stored, true);
+        return true;
+      }
+      throw e;
+    }
+    openStoredCdtTranscript(tool, stored, false);
+    return true;
+  }
+
+  function openStoredCdtTranscript(tool, stored, expired) {
+    state.tool = tool;
+    state.selectedScenarioId = null;
+    state.sessionId = stored.sessionId;
+    state.sessionEnded = expired;
+    state.aarPending = false;
+    state.aarDone = false;
+    cdtTranscript = stored.messages.slice();
+    $("chat-title").textContent = toolName(tool) + " session";
+    $("session-meta").textContent = "Clinical decision support — no scenario";
+    $("chat-guide-link").href = tool === "foxtwo"
+      ? "docs/foxtwo-how-to-use.html" : "docs/role1-how-to-use.html";
+    $("messages").innerHTML = "";
+    hide($("aar-panel"));
+    hide($("aar-complete"));
+    clearError($("chat-error"));
+    hide($("end-scenario-btn"));
+    restoringCdt = true;
+    stored.messages.forEach(function (m) {
+      addMessage(m.role, m.text, m.who, m.lead || undefined);
+    });
+    restoringCdt = false;
+    if (expired) {
+      addMessage("system", "This conversation's session ended (the service restarted). " +
+        "Your messages above are kept for reference. Use “New session” to start a fresh conversation.");
+      setChatEnabled(false);
+    } else {
+      setChatEnabled(true);
+    }
+    goToView("chat");
+  }
+
   // ---- Chat ----
   function openChat(sessionData) {
+    // A fresh session starts a fresh transcript (CDT only; scenario
+    // sessions are not persisted).
+    if (state.selectedScenarioId === null) cdtTranscript = [];
     $("chat-title").textContent = toolName(state.tool) + " session";
     var scenario = state.scenarios.find(function (s) { return String(s.id) === String(state.selectedScenarioId); });
     $("session-meta").textContent = state.selectedScenarioId === null
@@ -457,11 +558,12 @@
   // its line breaks. The optional lead is rendered bold ahead of the text
   // (used for the CDT mode label), separated by a single space.
   function addMessage(role, text, who, lead) {
+    var whoText = who || (role === "user" ? "You" : toolName(state.tool));
     var li = document.createElement("li");
     li.className = "message " + role;
     var whoEl = document.createElement("span");
     whoEl.className = "who";
-    whoEl.textContent = who || (role === "user" ? "You" : toolName(state.tool));
+    whoEl.textContent = whoText;
     li.appendChild(whoEl);
     var body = document.createElement("span");
     if (lead) {
@@ -475,6 +577,11 @@
     li.appendChild(body);
     $("messages").appendChild(li);
     li.scrollIntoView({ block: "nearest" });
+    // Persist CDT chats (not scenarios, not restores, not ended sessions).
+    if (!restoringCdt && state.selectedScenarioId === null && state.sessionId && !state.sessionEnded) {
+      cdtTranscript.push({ role: role, text: text, who: whoText, lead: lead || null });
+      saveCdtSession(state.tool, state.sessionId, cdtTranscript);
+    }
     return li;
   }
 
@@ -495,12 +602,16 @@
     addMessage("user", text, "You");
     show($("typing"));
     $("send-btn").disabled = true;
+    var sendSessionId = state.sessionId;
     try {
       var data = await apiPost("/api/chat", {
         session_id: state.sessionId,
         message: text
       });
       hide($("typing"));
+      // The user started a new session while this reply was in flight;
+      // drop the reply rather than showing it in the wrong conversation.
+      if (state.sessionId !== sendSessionId) return;
       if (data && typeof data.reply === "string" && data.reply) {
         addMessage("model", data.reply, toolName(state.tool));
       } else {
@@ -626,6 +737,24 @@
   });
 
   $("new-session-btn").addEventListener("click", function () {
+    // In clinical decision support, "New session" means what it says:
+    // end this conversation and start a fresh one with the same tool.
+    if (state.selectedScenarioId === null && state.tool) {
+      var tool = state.tool;
+      clearCdtSession(tool);
+      state.sessionId = null;
+      state.sessionEnded = false;
+      state.aarPending = false;
+      state.aarDone = false;
+      cdtTranscript = [];
+      $("messages").innerHTML = "";
+      $("chat-input").value = "";
+      hide($("aar-panel"));
+      hide($("aar-complete"));
+      clearError($("chat-error"));
+      startSession("", "");
+      return;
+    }
     state.sessionId = null;
     state.selectedScenarioId = null;
     state.sessionEnded = false;
