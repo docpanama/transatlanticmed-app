@@ -488,7 +488,9 @@
     $("chat-title").textContent = toolName(tool) + " session";
     $("session-meta").textContent = "Clinical decision support — no scenario";
     $("chat-guide-link").href = tool === "foxtwo"
-      ? "docs/foxtwo-how-to-use.html" : "docs/role1-how-to-use.html";
+      ? "docs/foxtwo-what-is.html" : "docs/role1-what-is.html";
+    $("chat-guide-link").textContent = tool === "foxtwo"
+      ? "What is FoxTwo?" : "What is Role1?";
     $("messages").innerHTML = "";
     hide($("aar-panel"));
     hide($("aar-complete"));
@@ -520,7 +522,9 @@
       ? "Clinical decision support — no scenario"
       : "Scenario: " + (scenario ? scenario.title : state.selectedScenarioId);
     $("chat-guide-link").href = state.tool === "foxtwo"
-      ? "docs/foxtwo-how-to-use.html" : "docs/role1-how-to-use.html";
+      ? "docs/foxtwo-what-is.html" : "docs/role1-what-is.html";
+    $("chat-guide-link").textContent = state.tool === "foxtwo"
+      ? "What is FoxTwo?" : "What is Role1?";
     $("messages").innerHTML = "";
     hide($("aar-panel"));
     hide($("aar-complete"));
