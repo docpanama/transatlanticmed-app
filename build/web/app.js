@@ -311,9 +311,8 @@
     updateScenarioSelection();
   }
 
-  // Scenario names are the difficulty only (Easy / Hard / Peds) — no
-  // description is shown, so nothing gives away the diagnosis or
-  // complications before the learner has examined the patient.
+  // Scenario names are the authored titles. No description is shown, so
+  // the picker stays a simple list of named scenarios.
   function scenarioItem(id, title) {
     var li = document.createElement("li");
     li.dataset.scenarioId = id === null ? "" : String(id);

@@ -66,15 +66,18 @@ function levelFrom(vignette, scenarioObj) {
   return 'Basic';
 }
 
-// Learner-facing scenario names are the difficulty only — Easy / Hard /
-// Peds. The authored titles ("The Delayed Evacuation", "The Quiet
-// Child", ...) and the theme are never shown to the learner: the theme
-// would give away the diagnosis/complications before the learner has
-// examined the patient, and the titles do the same work in miniature.
-// The original titles stay inside the raw JSON (server-side only).
-const DISPLAY_TITLES = { Basic: 'Easy', Advanced: 'Hard', Pediatric: 'Peds' };
-function displayTitle(level) {
-  return DISPLAY_TITLES[level] || level;
+// Learner-facing scenario names are the authored titles, so each scenario
+// can be referred to directly. Role1 S2 uses "The Long Hold" instead of
+// its original title so the picker does not give away the clinical
+// problem. The theme and descriptions are still never shown to the
+// learner.
+const TITLE_OVERRIDES = { 'pfc-s2': 'The Long Hold' };
+function displayTitle(id, scenario, level) {
+  if (TITLE_OVERRIDES[id]) return TITLE_OVERRIDES[id];
+  if (scenario && typeof scenario.title === 'string' && scenario.title.trim()) {
+    return scenario.title.trim();
+  }
+  return level;
 }
 
 function normalize(raw, id, tool) {
@@ -95,7 +98,7 @@ function normalize(raw, id, tool) {
     id, // file id, e.g. 'pfc-s1' — what the API uses as scenario_id
     tool,
     canonicalId: scenario.id || id, // e.g. 'S1' / 'CCT_SIM_S1' — what the AAR payload uses
-    title: displayTitle(level), // learner-facing name only (Easy / Hard / Peds)
+    title: displayTitle(id, scenario, level), // learner-facing scenario title
     level,
     theme: scenario.theme || '',
     // Student-facing only. Hidden state stays inside `raw` and is never
