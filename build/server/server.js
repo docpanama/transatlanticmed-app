@@ -22,6 +22,7 @@ const { chatCompletion } = require('./lib/openai');
 const {
   parseAarBlock, stripAarBlock, normalizeExperience, requestAar, AAR_REVIEW_NOTE,
 } = require('./lib/aar');
+const { evaluateAarGate, AAR_GATE_CONTINUE_MESSAGE } = require('./lib/aar-gate');
 const { stripStateBlock } = require('./lib/stateblock');
 const { TELEMED_ROLE } = require('./lib/telemed');
 
@@ -237,31 +238,46 @@ app.post('/api/chat', async (req, res) => {
 
   // AAR payload detection (sim mode only in practice — CDT mode is
   // instructed never to emit one, but the check is harmless there).
+  // Hybrid completion gate: an AAR payload is accepted only after enough
+  // learner turns, state advancement, and progress markers. Early AARs are
+  // suppressed and replaced with a continuation prompt, including in
+  // history, so the model continues the scenario instead of treating it
+  // as closed.
   let aarPending = false;
   const payload = parseAarBlock(reply);
-  if (payload) {
+  if (payload && session.scenario) {
+    const gate = evaluateAarGate(session);
+    session.aarGate = gate;
+    if (gate.met) {
+      reply = stripAarBlock(reply);
+      // Trust the session's stored values over the model's echo where they
+      // are set; the payload handler in the canonical prompts says the pasted
+      // JSON is the source of truth, so only fill blanks from the session.
+      if (!payload.certification_level && session.certification_level) {
+        payload.certification_level = session.certification_level;
+      }
+      if (!payload.experience) payload.experience = session.experience;
+      if (!payload.scenario_id && session.scenario) payload.scenario_id = session.scenario.canonicalId;
+      if (!payload.scenario_title && session.scenario) payload.scenario_title = session.scenario.title;
+      session.pendingAar = payload;
+      aarPending = true;
+      // Fixed completion note (Matt's wording): appended server-side so the
+      // learner sees it in the chat AAR view. The same sentence is appended
+      // to aar_text in requestAar() for the downloadable .docx.
+      reply = `${reply}\n\n${AAR_REVIEW_NOTE}`;
+      // The model is instructed to display this line itself, so it is
+      // usually already in the reply — only append it when it is missing,
+      // or the learner sees it twice.
+      if (!/Your AAR is ready/i.test(reply)) {
+        reply = `${reply}\n\nYour AAR is ready. Approve the next prompt to generate your downloadable report.`;
+      }
+    } else {
+      reply = AAR_GATE_CONTINUE_MESSAGE;
+      session.history[session.history.length - 1].content = reply;
+    }
+  } else if (payload) {
     reply = stripAarBlock(reply);
-    // Trust the session's stored values over the model's echo where they
-    // are set; the payload handler in the canonical prompts says the pasted
-    // JSON is the source of truth, so only fill blanks from the session.
-    if (!payload.certification_level && session.certification_level) {
-      payload.certification_level = session.certification_level;
-    }
-    if (!payload.experience) payload.experience = session.experience;
-    if (!payload.scenario_id && session.scenario) payload.scenario_id = session.scenario.canonicalId;
-    if (!payload.scenario_title && session.scenario) payload.scenario_title = session.scenario.title;
-    session.pendingAar = payload;
-    aarPending = true;
-    // Fixed completion note (Matt's wording): appended server-side so the
-    // learner sees it in the chat AAR view. The same sentence is appended
-    // to aar_text in requestAar() for the downloadable .docx.
-    reply = `${reply}\n\n${AAR_REVIEW_NOTE}`;
-    // The model is instructed to display this line itself, so it is
-    // usually already in the reply — only append it when it is missing,
-    // or the learner sees it twice.
-    if (!/Your AAR is ready/i.test(reply)) {
-      reply = `${reply}\n\nYour AAR is ready. Approve the next prompt to generate your downloadable report.`;
-    }
+    session.history[session.history.length - 1].content = reply;
   }
 
   // Display text only: hide the machine-readable state block from the

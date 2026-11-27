@@ -19,6 +19,7 @@ const assert = require('assert');
 const scenarios = require('../lib/scenarios');
 const { compileDirective } = require('../lib/directive');
 const { parseAarBlock, stripAarBlock, scrubPii, normalizeExperience, requestAar } = require('../lib/aar');
+const { evaluateAarGate } = require('../lib/aar-gate');
 const { stripStateBlock } = require('../lib/stateblock');
 const { TELEMED_ROLE } = require('../lib/telemed');
 
@@ -38,7 +39,7 @@ check('loader accepts nested shape (pfc-s1: engine_rules under directive)', () =
   const s = scenarios.getScenario('pfc-s1');
   assert.ok(s.blocks.engine_rules, 'engine_rules missing');
   assert.ok(s.blocks.session_start_behavior, 'session_start_behavior missing');
-  assert.strictEqual(s.title, 'Easy');
+  assert.strictEqual(s.title, 'The Delayed Evacuation');
   assert.strictEqual(s.level, 'Basic');
 });
 
@@ -47,7 +48,7 @@ check('loader accepts top-level shape (pfc-s2 v1.3.3: engine blocks at top level
   assert.ok(s.blocks.engine_rules, 'engine_rules missing');
   assert.ok(s.blocks.engine_patch, 'engine_patch missing');
   assert.ok(s.blocks.cognitive_offloading_policy, 'cognitive_offloading_policy missing');
-  assert.strictEqual(s.title, 'Hard');
+  assert.strictEqual(s.title, 'The Long Hold');
   assert.strictEqual(s.level, 'Advanced');
 });
 
@@ -58,7 +59,7 @@ check('loader accepts top-level shape (cct-s1..s3)', () => {
     assert.ok(s.blocks.simulation_mode_behavior, `${id}: simulation_mode_behavior missing`);
     assert.ok(s.blocks.time_control, `${id}: time_control missing`);
   }
-  assert.strictEqual(scenarios.getScenario('cct-s1').title, 'Easy');
+  assert.strictEqual(scenarios.getScenario('cct-s1').title, 'The Borderline Load');
   assert.strictEqual(scenarios.getScenario('cct-s2').level, 'Advanced');
   assert.strictEqual(scenarios.getScenario('cct-s3').level, 'Pediatric');
 });
@@ -84,7 +85,7 @@ check('vignettes loaded for all 6 scenarios', () => {
 check('directive compiler includes engine rules and injects, strips hidden state', () => {
   const s = scenarios.getScenario('pfc-s2');
   const text = compileDirective(s);
-  assert.ok(text.includes('Scenario: Hard'));
+  assert.ok(text.includes('Scenario: The Long Hold'));
   assert.ok(text.includes('Injects'));
   // Hidden-state BLOCKS must be gone (checked as JSON keys). Note the bare
   // phrase "hidden_state" legitimately appears inside engine_rules prose
@@ -98,7 +99,7 @@ check('directive compiler includes engine rules and injects, strips hidden state
 check('directive compiler works for a CCT scenario (resolution hooks included)', () => {
   const text = compileDirective(scenarios.getScenario('cct-s1'));
   assert.ok(text.includes('Resolution hooks'));
-  assert.ok(text.includes('Scenario: Easy'));
+  assert.ok(text.includes('Scenario: The Borderline Load'));
   for (const key of ['"hidden_state"', '"true_problem_set"', '"primary_transport_killer"',
     '"arrest_risk_pathway"', '"discovery_nodes"', '"latent_risks"']) {
     assert.ok(!text.includes(key), `${key} leaked into compiled directive`);
@@ -295,6 +296,49 @@ check('telemed consult marking survives state-block stripping', () => {
   assert.ok(out.includes('What are the current vitals'), 'consult words must survive stripping');
   assert.ok(!out.includes('```state'), 'state block must still be stripped');
   assert.ok(!out.includes('timestamp_or_phase'));
+});
+
+check('AAR gate rejects early completion', () => {
+  const session = {
+    scenario: { id: 'pfc-s1', canonicalId: 'S1' },
+    history: [
+      { role: 'user', content: 'Assess vitals and mental status.' },
+      { role: 'assistant', content: '```state\ntimestamp: Start\nbrief_intervention_log: none\n```' },
+      { role: 'user', content: 'I declare the exercise complete. Please present the after-action review.' },
+    ],
+  };
+  const gate = evaluateAarGate(session);
+  assert.strictEqual(gate.met, false);
+  assert.ok(gate.reasons.some((r) => r.startsWith('learner_turns_')));
+});
+
+check('AAR gate accepts mature Role1 S1 completion', () => {
+  const learner = [
+    'Assess vitals, mental status, urine output, and leg exam with passive stretch.',
+    'This looks like sepsis with shock and hypoperfusion.',
+    'Start oxygen and IV fluids for perfusion support.',
+    'Give antibiotics now and call surgical consult for source control.',
+    'Reassess vitals, urine output, lactate trend, and mental status.',
+    'Repeat leg exam and trend response after fluids.',
+    'Call telemedicine and medical direction for evacuation planning.',
+    'Prepare handoff with trends, interventions, resource limits, and unresolved risks.',
+  ];
+  const history = [];
+  learner.forEach((content, i) => {
+    history.push({ role: 'user', content });
+    history.push({
+      role: 'assistant',
+      content: '```state\n'
+        + `timestamp_or_phase: ${i === 0 ? 'Start' : 'hour 4'}\n`
+        + 'brief_intervention_log: oxygen started; IV fluids given; antibiotics given\n'
+        + '```',
+    });
+  });
+  history.push({ role: 'user', content: 'I declare the exercise complete. Please present the after-action review.' });
+  const gate = evaluateAarGate({ scenario: { id: 'pfc-s1', canonicalId: 'S1' }, history });
+  assert.strictEqual(gate.met, true, JSON.stringify(gate));
+  assert.strictEqual(gate.learnerTurns, 8);
+  assert.ok(gate.markerCount >= 4);
 });
 
 (async () => {
