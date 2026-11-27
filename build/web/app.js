@@ -242,6 +242,7 @@
       $("start-student-link").href = state.tool === "foxtwo"
         ? "docs/foxtwo-student-instructions.html" : "docs/role1-student-instructions.html";
       $("role1-disclosure-note").classList.toggle("hidden", state.tool !== "role1");
+      $("foxtwo-disclosure-note").classList.toggle("hidden", state.tool !== "foxtwo");
       goToView("start");
       loadScenarios();
     });
