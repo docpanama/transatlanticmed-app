@@ -103,6 +103,9 @@ p.lede { color: var(--muted); margin: 0 0 16px; }
 .read-first ul { margin: 8px 0 0; padding-left: 1.2em; }
 .read-first li { margin: 4px 0; }
 .read-first a { font-weight: 600; }
+.disclosure-note { color: var(--muted); font-size: 0.9rem; line-height: 1.45; margin: -4px 0 16px; }
+.disclosure-note strong { color: var(--ink); }
+.disclosure-note a { font-weight: 600; }
 
 /* ---- Status / errors ---- */
 /* Connection status: quiet by design. The checking/connected states are a
